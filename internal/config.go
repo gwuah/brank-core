@@ -29,6 +29,7 @@ type Config struct {
 	REDIS_DB       int
 	REDIS_URL      string
 	DATABASE_URL   string
+	PORT           int
 	ENVIRONMENT    Environment
 }
 
@@ -83,6 +84,7 @@ func NewConfig() *Config {
 		REDIS_DB:       GetInt("REDIS_DB", 1),
 		REDIS_URL:      Get("REDIS_URL", ""),
 		DATABASE_URL:   Get("DATABASE_URL", ""),
+		PORT:           GetInt("PORT", 5454),
 		ENVIRONMENT:    GetEnvironment(),
 	}
 }

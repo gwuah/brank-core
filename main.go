@@ -20,13 +20,8 @@ func main() {
 		&models.Client{},
 	)
 
-	pg.Create(&models.Client{Verified: internal.Bool(false)})
+	_ = storage.NewRedis(config)
 
-	redis := storage.NewRedis(config)
-
-	if _, err := redis.Set("name", "manfo", 0).Result(); err != nil {
-		log.Fatal("redis test insert error", err)
-	}
-
-	log.Println("shutting down")
+	server := internal.NewHTTPServer(config)
+	server.Start()
 }
