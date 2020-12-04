@@ -11,7 +11,7 @@ import (
 )
 
 type Server struct {
-	engine *gin.Engine
+	Engine *gin.Engine
 	config *Config
 }
 
@@ -25,7 +25,7 @@ func NewHTTPServer(cfg *Config) *Server {
 	})
 	return &Server{
 		config: cfg,
-		engine: engine,
+		Engine: engine,
 	}
 }
 
@@ -33,7 +33,7 @@ func (s *Server) Start() {
 
 	h := &http.Server{
 		Addr:    fmt.Sprintf(":%v", s.config.PORT),
-		Handler: s.engine,
+		Handler: s.Engine,
 	}
 
 	quit := make(chan os.Signal)

@@ -4,6 +4,7 @@ import (
 	"brank/internal"
 	"brank/internal/models"
 	"brank/internal/storage"
+	"fmt"
 
 	"log"
 )
@@ -20,8 +21,20 @@ func main() {
 		&models.Client{},
 	)
 
-	_ = storage.NewRedis(config)
-
+	kvStore := storage.NewRedis(config)
+	eventStore := internal.NewEventStore([]string{"validate_login"}, "localhost", "brank_mq")
 	server := internal.NewHTTPServer(config)
+	router := internal.NewRouter(server.Engine, eventStore, kvStore)
+
+	go func() {
+		for {
+			select {
+			case msg := <-eventStore.Subscribe():
+				fmt.Println(string(msg), "from consumer")
+			}
+		}
+	}()
+
+	router.RegisterRoutes()
 	server.Start()
 }
