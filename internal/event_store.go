@@ -19,26 +19,24 @@ type messaging struct {
 }
 
 func getProducerConfig(config *Config) *kafka.ConfigMap {
+	log.Println("environment", config.ENVIRONMENT)
 	if config.ENVIRONMENT == Development {
 		return &kafka.ConfigMap{
 			"metadata.broker.list": "localhost",
 		}
 	} else {
 		return &kafka.ConfigMap{
-			"metadata.broker.list":            config.CLOUDKARAFKA_BROKERS,
-			"security.protocol":               "SASL_SSL",
-			"sasl.mechanisms":                 "SCRAM-SHA-256",
-			"sasl.username":                   config.CLOUDKARAFKA_USERNAME,
-			"sasl.password":                   config.CLOUDKARAFKA_PASSWORD,
-			"group.id":                        config.KAFKA_GROUP_ID,
-			"go.events.channel.enable":        true,
-			"go.application.rebalance.enable": true,
-			"default.topic.config":            kafka.ConfigMap{"auto.offset.reset": "earliest"},
+			"metadata.broker.list": config.CLOUDKARAFKA_BROKERS,
+			"security.protocol":    "SASL_SSL",
+			"sasl.mechanisms":      "SCRAM-SHA-256",
+			"sasl.username":        config.CLOUDKARAFKA_USERNAME,
+			"sasl.password":        config.CLOUDKARAFKA_PASSWORD,
 		}
 	}
 }
 
 func getConsumerConfig(config *Config) *kafka.ConfigMap {
+	log.Println("environment", config.ENVIRONMENT)
 	if config.ENVIRONMENT == Development {
 		return &kafka.ConfigMap{
 			"metadata.broker.list": "localhost",
@@ -47,16 +45,14 @@ func getConsumerConfig(config *Config) *kafka.ConfigMap {
 		}
 	} else {
 		return &kafka.ConfigMap{
-			"metadata.broker.list":            config.CLOUDKARAFKA_BROKERS,
-			"security.protocol":               "SASL_SSL",
-			"sasl.mechanisms":                 "SCRAM-SHA-256",
-			"sasl.username":                   config.CLOUDKARAFKA_USERNAME,
-			"sasl.password":                   config.CLOUDKARAFKA_PASSWORD,
-			"group.id":                        config.KAFKA_GROUP_ID,
-			"go.events.channel.enable":        true,
-			"go.application.rebalance.enable": true,
-			"default.topic.config":            kafka.ConfigMap{"auto.offset.reset": "earliest"},
-			"auto.offset.reset":               "earliest",
+			"metadata.broker.list": config.CLOUDKARAFKA_BROKERS,
+			"security.protocol":    "SASL_SSL",
+			"sasl.mechanisms":      "SCRAM-SHA-256",
+			"sasl.username":        config.CLOUDKARAFKA_USERNAME,
+			"sasl.password":        config.CLOUDKARAFKA_PASSWORD,
+			"group.id":             config.KAFKA_GROUP_ID,
+			"default.topic.config": kafka.ConfigMap{"auto.offset.reset": "earliest"},
+			"auto.offset.reset":    "earliest",
 		}
 	}
 }
