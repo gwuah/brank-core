@@ -31,6 +31,7 @@ func getProducerConfig(config *Config) *kafka.ConfigMap {
 			"sasl.mechanisms":      "SCRAM-SHA-256",
 			"sasl.username":        config.CLOUDKARAFKA_USERNAME,
 			"sasl.password":        config.CLOUDKARAFKA_PASSWORD,
+			"ssl.ca.location":      "./cloudkarafka.ca",
 		}
 	}
 }
@@ -53,6 +54,7 @@ func getConsumerConfig(config *Config) *kafka.ConfigMap {
 			"group.id":             config.KAFKA_GROUP_ID,
 			"default.topic.config": kafka.ConfigMap{"auto.offset.reset": "earliest"},
 			"auto.offset.reset":    "earliest",
+			"ssl.ca.location":      "./cloudkarafka.ca",
 		}
 	}
 }
