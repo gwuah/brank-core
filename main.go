@@ -22,14 +22,17 @@ func main() {
 	)
 
 	kvStore := storage.NewRedis(config)
-	eventStore := internal.NewEventStore([]string{"validate_login"}, "localhost", "brank_mq")
+
+	eventStore := internal.NewEventStore(config)
+
 	server := internal.NewHTTPServer(config)
 	router := internal.NewRouter(server.Engine, eventStore, kvStore)
 
 	go func() {
+		stream := eventStore.Subscribe([]string{internal.GenerateTopic("validate_login")})
 		for {
 			select {
-			case msg := <-eventStore.Subscribe():
+			case msg := <-stream:
 				fmt.Println(string(msg), "from consumer")
 			}
 		}
