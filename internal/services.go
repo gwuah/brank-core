@@ -6,7 +6,7 @@ import (
 
 func HandleMessagePost(req MessageRequest, e EventStore) (int, map[string]interface{}, error) {
 	go func() {
-		e.Publish("validate_login", []byte(req.Message))
+		e.Publish(GenerateTopic("validate_login"), []byte(req.Message))
 	}()
 
 	return http.StatusOK, map[string]interface{}{

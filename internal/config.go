@@ -18,19 +18,24 @@ const (
 )
 
 type Config struct {
-	PG_HOST        string
-	PG_PORT        string
-	PG_NAME        string
-	PG_USER        string
-	PG_PASS        string
-	PG_SSLMODE     string
-	REDIS_ADDRESS  string
-	REDIS_PASSWORD string
-	REDIS_DB       int
-	REDIS_URL      string
-	DATABASE_URL   string
-	PORT           int
-	ENVIRONMENT    Environment
+	PG_HOST                   string
+	PG_PORT                   string
+	PG_NAME                   string
+	PG_USER                   string
+	PG_PASS                   string
+	PG_SSLMODE                string
+	REDIS_ADDRESS             string
+	REDIS_PASSWORD            string
+	REDIS_DB                  int
+	REDIS_URL                 string
+	DATABASE_URL              string
+	PORT                      int
+	KAFKA_GROUP_ID            string
+	CLOUDKARAFKA_BROKERS      string
+	CLOUDKARAFKA_USERNAME     string
+	CLOUDKARAFKA_PASSWORD     string
+	CLOUDKARAFKA_TOPIC_PREFIX string
+	ENVIRONMENT               Environment
 }
 
 func Get(key, fallback string) string {
@@ -73,18 +78,23 @@ func load() {
 func NewConfig() *Config {
 	load()
 	return &Config{
-		PG_HOST:        Get("PG_HOST", "localhost"),
-		PG_PORT:        Get("PG_PORT", "5432"),
-		PG_NAME:        Get("PG_NAME", "oka_dev"),
-		PG_USER:        Get("PG_USER", "user"),
-		PG_PASS:        Get("PG_PASS", "password"),
-		PG_SSLMODE:     Get("PG_SSLMODE", "disable"),
-		REDIS_ADDRESS:  Get("REDIS_ADDRESS", "localhost:6379"),
-		REDIS_PASSWORD: Get("REDIS_PASSWORD", ""),
-		REDIS_DB:       GetInt("REDIS_DB", 1),
-		REDIS_URL:      Get("REDIS_URL", ""),
-		DATABASE_URL:   Get("DATABASE_URL", ""),
-		PORT:           GetInt("PORT", 5454),
-		ENVIRONMENT:    GetEnvironment(),
+		PG_HOST:                   Get("PG_HOST", "localhost"),
+		PG_PORT:                   Get("PG_PORT", "5432"),
+		PG_NAME:                   Get("PG_NAME", "oka_dev"),
+		PG_USER:                   Get("PG_USER", "user"),
+		PG_PASS:                   Get("PG_PASS", "password"),
+		PG_SSLMODE:                Get("PG_SSLMODE", "disable"),
+		REDIS_ADDRESS:             Get("REDIS_ADDRESS", "localhost:6379"),
+		REDIS_PASSWORD:            Get("REDIS_PASSWORD", ""),
+		REDIS_DB:                  GetInt("REDIS_DB", 1),
+		REDIS_URL:                 Get("REDIS_URL", ""),
+		DATABASE_URL:              Get("DATABASE_URL", ""),
+		PORT:                      GetInt("PORT", 5454),
+		KAFKA_GROUP_ID:            Get("KAFKA_GROUP_ID", "brank_mq"),
+		CLOUDKARAFKA_BROKERS:      Get("CLOUDKARAFKA_BROKERS", ""),
+		CLOUDKARAFKA_USERNAME:     Get("CLOUDKARAFKA_USERNAME", ""),
+		CLOUDKARAFKA_PASSWORD:     Get("CLOUDKARAFKA_PASSWORD", ""),
+		CLOUDKARAFKA_TOPIC_PREFIX: Get("CLOUDKARAFKA_TOPIC_PREFIX", "6nnq3d64-"),
+		ENVIRONMENT:               GetEnvironment(),
 	}
 }

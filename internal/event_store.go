@@ -8,22 +8,62 @@ import (
 
 type EventStore interface {
 	Publish(topic string, msg []byte) error
-	Subscribe() chan []byte
+	Subscribe(topics []string) chan []byte
 	Close()
 }
 
 type messaging struct {
-	topics []string
-	broker string
-	c      *kafka.Consumer
-	p      *kafka.Producer
+	c   *kafka.Consumer
+	p   *kafka.Producer
+	cfg *Config
 }
 
-func NewEventStore(topics []string, broker, group string) EventStore {
+func getProducerConfig(config *Config) *kafka.ConfigMap {
+	if config.ENVIRONMENT == Development {
+		return &kafka.ConfigMap{
+			"metadata.broker.list": "localhost",
+		}
+	} else {
+		return &kafka.ConfigMap{
+			"metadata.broker.list":            config.CLOUDKARAFKA_BROKERS,
+			"security.protocol":               "SASL_SSL",
+			"sasl.mechanisms":                 "SCRAM-SHA-256",
+			"sasl.username":                   config.CLOUDKARAFKA_USERNAME,
+			"sasl.password":                   config.CLOUDKARAFKA_PASSWORD,
+			"group.id":                        config.KAFKA_GROUP_ID,
+			"go.events.channel.enable":        true,
+			"go.application.rebalance.enable": true,
+			"default.topic.config":            kafka.ConfigMap{"auto.offset.reset": "earliest"},
+		}
+	}
+}
 
-	producer, err := kafka.NewProducer(&kafka.ConfigMap{
-		"metadata.broker.list": broker,
-	})
+func getConsumerConfig(config *Config) *kafka.ConfigMap {
+	if config.ENVIRONMENT == Development {
+		return &kafka.ConfigMap{
+			"metadata.broker.list": "localhost",
+			"group.id":             config.KAFKA_GROUP_ID,
+			"auto.offset.reset":    "earliest",
+		}
+	} else {
+		return &kafka.ConfigMap{
+			"metadata.broker.list":            config.CLOUDKARAFKA_BROKERS,
+			"security.protocol":               "SASL_SSL",
+			"sasl.mechanisms":                 "SCRAM-SHA-256",
+			"sasl.username":                   config.CLOUDKARAFKA_USERNAME,
+			"sasl.password":                   config.CLOUDKARAFKA_PASSWORD,
+			"group.id":                        config.KAFKA_GROUP_ID,
+			"go.events.channel.enable":        true,
+			"go.application.rebalance.enable": true,
+			"default.topic.config":            kafka.ConfigMap{"auto.offset.reset": "earliest"},
+			"auto.offset.reset":               "earliest",
+		}
+	}
+}
+
+func NewEventStore(config *Config) EventStore {
+
+	producer, err := kafka.NewProducer(getProducerConfig(config))
 
 	if err != nil {
 		panic(err)
@@ -40,21 +80,16 @@ func NewEventStore(topics []string, broker, group string) EventStore {
 		}
 	}()
 
-	consumer, err := kafka.NewConsumer(&kafka.ConfigMap{
-		"metadata.broker.list": broker,
-		"group.id":             group,
-		"auto.offset.reset":    "earliest",
-	})
+	consumer, err := kafka.NewConsumer(getConsumerConfig(config))
 
 	if err != nil {
 		panic(err)
 	}
 
 	return &messaging{
-		c:      consumer,
-		p:      producer,
-		topics: topics,
-		broker: broker,
+		c:   consumer,
+		p:   producer,
+		cfg: config,
 	}
 }
 
@@ -70,9 +105,9 @@ func (m *messaging) Publish(topic string, msg []byte) error {
 	return err
 }
 
-func (m *messaging) Subscribe() chan []byte {
+func (m *messaging) Subscribe(topics []string) chan []byte {
 	stream := make(chan []byte, 100)
-	m.c.SubscribeTopics(m.topics, nil)
+	m.c.SubscribeTopics(topics, nil)
 
 	go func() {
 		for {

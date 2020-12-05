@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"fmt"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
@@ -34,4 +35,8 @@ func ConvertToInt(num string) int {
 func Bool(b bool) *bool {
 	temp := b
 	return &temp
+}
+
+func GenerateTopic(topic string) string {
+	return fmt.Sprintf("%s%s", Get("CLOUDKARAFKA_TOPIC_PREFIX", ""), topic)
 }
