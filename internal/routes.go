@@ -1,9 +1,7 @@
 package internal
 
 import (
-	"fmt"
 	"net/http"
-	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-redis/redis"
@@ -25,7 +23,6 @@ func NewRouter(engine *gin.Engine, eStore EventStore, kvStore *redis.Client) *ro
 
 func (r *router) RegisterRoutes() {
 	r.engine.POST("/message", func(c *gin.Context) {
-		time1 := time.Now()
 
 		var req MessageRequest
 
@@ -36,19 +33,36 @@ func (r *router) RegisterRoutes() {
 			return
 		}
 
-		fmt.Println("Time since after parsing", time.Since(time1))
-		status, response, err := HandleMessagePost(req, r.eStore)
-		fmt.Println("Time since after service runs", time.Since(time1))
+		response := HandleMessagePost(req, r.eStore)
 
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{
-				"status": "failed",
+		if response.Error {
+			c.JSON(response.Code, gin.H{
+				"message": response.Meta.Message,
 			})
 			return
 		}
 
-		fmt.Println("Time since before response runs", time.Since(time1))
+		c.JSON(response.Code, response)
+	})
 
-		c.JSON(status, response)
+	r.engine.GET("/transactions/:userId", func(c *gin.Context) {
+		page := "1"
+		if c.Query("page") != "" {
+			page = c.Query("page")
+		}
+
+		response := HandleGetTransactions(TransactionsRequest{
+			UserId: c.Param("userId"),
+			Page:   ConvertToInt(page),
+		})
+
+		if response.Error {
+			c.JSON(response.Code, gin.H{
+				"message": response.Meta.Message,
+			})
+			return
+		}
+
+		c.JSON(response.Code, response.Meta)
 	})
 }
