@@ -8,13 +8,30 @@ import (
 	"gorm.io/gorm"
 )
 
-func RunMigrations(db *gorm.DB, models ...interface{}) error {
-	err := db.AutoMigrate(models...)
-	return err
+type JoinTableConfig struct {
+	Model     interface{}
+	JoinTable interface{}
+	Field     string
 }
 
-func SetupJoinTable(db *gorm.DB, model interface{}, field string, joinTable interface{}) error {
-	err := db.SetupJoinTable(model, field, joinTable)
+func SetupJoinTables(db *gorm.DB, configs []JoinTableConfig) error {
+
+	sjt := func(config JoinTableConfig) error {
+		err := db.SetupJoinTable(config.Model, config.Field, config.JoinTable)
+		return err
+	}
+
+	for _, config := range configs {
+		if err := sjt(config); err != nil {
+			return nil
+		}
+	}
+
+	return nil
+}
+
+func RunMigrations(db *gorm.DB, models ...interface{}) error {
+	err := db.AutoMigrate(models...)
 	return err
 }
 

@@ -18,8 +18,18 @@ func main() {
 		log.Fatal("postgres conn failed", err)
 	}
 
-	err = storage.SetupJoinTable(pg, &models.Customer{}, "Banks", &models.CustomerBank{})
-	err = storage.SetupJoinTable(pg, &models.Bank{}, "Customers", &models.CustomerBank{})
+	err = storage.SetupJoinTables(pg, []storage.JoinTableConfig{
+		{
+			Model:     &models.Customer{},
+			Field:     "Banks",
+			JoinTable: &models.CustomerBank{},
+		},
+		{
+			Model:     &models.Bank{},
+			Field:     "Customers",
+			JoinTable: &models.CustomerBank{},
+		},
+	})
 
 	err = storage.RunMigrations(pg,
 		&models.Transaction{},
