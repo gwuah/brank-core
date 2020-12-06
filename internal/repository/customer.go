@@ -10,7 +10,7 @@ type customerLayer struct {
 	db *gorm.DB
 }
 
-func newCustomer(db *gorm.DB) *customerLayer {
+func newCustomerLayer(db *gorm.DB) *customerLayer {
 	return &customerLayer{
 		db: db,
 	}

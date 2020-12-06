@@ -22,12 +22,12 @@ func main() {
 		{
 			Model:     &models.Customer{},
 			Field:     "Banks",
-			JoinTable: &models.CustomerBank{},
+			JoinTable: &models.Account{},
 		},
 		{
 			Model:     &models.Bank{},
 			Field:     "Customers",
-			JoinTable: &models.CustomerBank{},
+			JoinTable: &models.Account{},
 		},
 	})
 
@@ -37,7 +37,13 @@ func main() {
 		&models.Inquiry{},
 		&models.Client{},
 		&models.Bank{},
+		&models.Account{},
 	)
+
+	if config.RUN_SEEDS {
+		log.Println("Running seeds")
+		internal.RunSeeds(pg)
+	}
 
 	kvStore := storage.NewRedis(config)
 

@@ -17,9 +17,10 @@ type VerifyLoginsRequest struct {
 }
 
 type BrankPagination struct {
-	CurrentPage int `json:"current_page"`
-	NextPage    int `json:"next_page"`
-	Count       int `json:"count"`
+	CurrentPage  int   `json:"current_page"`
+	NextPage     int   `json:"next_page"`
+	PreviousPage int   `json:"previous_page"`
+	Count        int64 `json:"count"`
 }
 
 type BrankMeta struct {

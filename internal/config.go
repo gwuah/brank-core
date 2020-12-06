@@ -36,6 +36,7 @@ type Config struct {
 	CLOUDKARAFKA_PASSWORD     string
 	CLOUDKARAFKA_TOPIC_PREFIX string
 	SSL_CA                    string
+	RUN_SEEDS                 bool
 
 	ENVIRONMENT Environment
 }
@@ -132,5 +133,6 @@ func NewConfig() *Config {
 		NVOFBkpdn627G190
 		-----END CERTIFICATE-----`),
 		ENVIRONMENT: GetEnvironment(),
+		RUN_SEEDS:   false,
 	}
 }

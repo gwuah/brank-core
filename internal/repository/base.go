@@ -3,11 +3,13 @@ package repository
 import "gorm.io/gorm"
 
 type Repo struct {
-	Customer *customerLayer
+	Customers    *customerLayer
+	Transactions *transactionLayer
 }
 
 func NewRepo(db *gorm.DB) Repo {
 	return Repo{
-		Customer: newCustomer(db),
+		Customers:    newCustomerLayer(db),
+		Transactions: newTransactionLayer(db),
 	}
 }

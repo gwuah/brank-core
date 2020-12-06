@@ -16,31 +16,50 @@ func HandleMessagePost(req MessageRequest, e EventStore) BrankResponse {
 		Code:  http.StatusOK,
 		Meta: BrankMeta{
 			Data:    map[string]interface{}{},
-			Message: "Message Received",
+			Message: "message received",
 		},
 	}
 
 }
 
 func HandleGetTransactions(req TransactionsRequest, repo repository.Repo) BrankResponse {
-	customer, err := repo.Customer.FindById(req.CustomerId)
+	_, err := repo.Customers.FindById(req.CustomerId)
 	if err != nil {
-		log.Println(err)
+		log.Println("failed to load transactions", err)
 		return BrankResponse{
 			Error: true,
 			Code:  http.StatusNotFound,
 			Meta: BrankMeta{
 				Data:    map[string]interface{}{},
-				Message: "Customer not found",
+				Message: "customer not found",
 			},
 		}
 	}
+	res, err := repo.Transactions.Find(map[string]interface{}{}, req.Page)
+	if err != nil {
+		log.Println("failed to load transactions", err)
+		return BrankResponse{
+			Error: true,
+			Code:  http.StatusInternalServerError,
+			Meta: BrankMeta{
+				Data:    map[string]interface{}{},
+				Message: "failed to load transactions",
+			},
+		}
+	}
+
 	return BrankResponse{
 		Error: false,
 		Code:  http.StatusOK,
 		Meta: BrankMeta{
-			Data:    customer,
-			Message: "Transactions successfully retrieved",
+			Data: res.Records,
+			Pagination: &BrankPagination{
+				Count:        res.TotalRecord,
+				NextPage:     res.NextPage,
+				CurrentPage:  res.Page,
+				PreviousPage: res.PrevPage,
+			},
+			Message: "transactionsyyy successfully retrieved",
 		},
 	}
 
