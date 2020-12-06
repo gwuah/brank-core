@@ -7,6 +7,6 @@ type Transaction struct {
 	Description string    `json:"description"`
 	Date        string    `json:"transaction_date"`
 	Status      Status    `json:"status"`
-	InquiryId   int       `json:"inquiry_id"`
+	InquiryID   int       `json:"inquiry_id"`
 	Inquiry     Inquiry   `json:"inquiry"`
 }

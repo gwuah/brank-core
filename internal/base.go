@@ -5,8 +5,8 @@ type MessageRequest struct {
 }
 
 type TransactionsRequest struct {
-	UserId string `json:"user_id"`
-	Page   int    `json:"page"`
+	CustomerId int `json:"customer_id"`
+	Page       int `json:"page"`
 }
 
 type VerifyLoginsRequest struct {

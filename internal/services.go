@@ -1,6 +1,8 @@
 package internal
 
 import (
+	"brank/internal/repository"
+	"log"
 	"net/http"
 )
 
@@ -20,19 +22,25 @@ func HandleMessagePost(req MessageRequest, e EventStore) BrankResponse {
 
 }
 
-func HandleGetTransactions(req TransactionsRequest) BrankResponse {
-
+func HandleGetTransactions(req TransactionsRequest, repo repository.Repo) BrankResponse {
+	customer, err := repo.Customer.FindById(req.CustomerId)
+	if err != nil {
+		log.Println(err)
+		return BrankResponse{
+			Error: true,
+			Code:  http.StatusNotFound,
+			Meta: BrankMeta{
+				Data:    map[string]interface{}{},
+				Message: "Customer not found",
+			},
+		}
+	}
 	return BrankResponse{
 		Error: false,
 		Code:  http.StatusOK,
 		Meta: BrankMeta{
-			Data:    map[string]interface{}{},
+			Data:    customer,
 			Message: "Transactions successfully retrieved",
-			Pagination: &BrankPagination{
-				CurrentPage: 1,
-				NextPage:    2,
-				Count:       100,
-			},
 		},
 	}
 

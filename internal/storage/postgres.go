@@ -13,6 +13,11 @@ func RunMigrations(db *gorm.DB, models ...interface{}) error {
 	return err
 }
 
+func SetupJoinTable(db *gorm.DB, model interface{}, field string, joinTable interface{}) error {
+	err := db.SetupJoinTable(model, field, joinTable)
+	return err
+}
+
 func NewPostgres(config *internal.Config) (*gorm.DB, error) {
 	var (
 		db  *gorm.DB

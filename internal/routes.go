@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"brank/internal/repository"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -11,13 +12,15 @@ type router struct {
 	engine  *gin.Engine
 	kvStore *redis.Client
 	eStore  EventStore
+	repo    repository.Repo
 }
 
-func NewRouter(engine *gin.Engine, eStore EventStore, kvStore *redis.Client) *router {
+func NewRouter(engine *gin.Engine, eStore EventStore, kvStore *redis.Client, repo repository.Repo) *router {
 	return &router{
 		engine:  engine,
 		eStore:  eStore,
 		kvStore: kvStore,
+		repo:    repo,
 	}
 }
 
@@ -45,16 +48,16 @@ func (r *router) RegisterRoutes() {
 		c.JSON(response.Code, response)
 	})
 
-	r.engine.GET("/transactions/:userId", func(c *gin.Context) {
+	r.engine.GET("/transactions/:customerId", func(c *gin.Context) {
 		page := "1"
 		if c.Query("page") != "" {
 			page = c.Query("page")
 		}
 
 		response := HandleGetTransactions(TransactionsRequest{
-			UserId: c.Param("userId"),
-			Page:   ConvertToInt(page),
-		})
+			CustomerId: ConvertToInt(c.Param("customerId")),
+			Page:       ConvertToInt(page),
+		}, r.repo)
 
 		if response.Error {
 			c.JSON(response.Code, gin.H{

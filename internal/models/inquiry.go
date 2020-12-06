@@ -4,7 +4,7 @@ import "github.com/jinzhu/gorm/dialects/postgres"
 
 type Inquiry struct {
 	Model
-	Raw        postgres.Jsonb `json:"raw"`
-	CustomerId int            `json:"customer_id"`
-	Customer   Customer       `json:"customer"`
+	Raw            postgres.Jsonb `json:"raw"`
+	CustomerBankID int            `json:"customer_bank_id"`
+	CustomerBank   CustomerBank   `json:"customer_bank"`
 }
