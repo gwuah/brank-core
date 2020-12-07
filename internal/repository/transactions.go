@@ -29,9 +29,8 @@ func (t *transactionLayer) Find(query map[string]interface{}, page int) (*Transa
 	transactions := []models.Transaction{}
 
 	// seed it with query before passing it down to the paginator
-	// t.db.Where(query)
 	paginator := Paging(&Param{
-		DB:      t.db,
+		DB:      t.db.Where(query),
 		Page:    page,
 		Limit:   100,
 		OrderBy: []string{"id desc"},

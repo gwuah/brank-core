@@ -36,6 +36,7 @@ func HandleGetTransactions(req TransactionsRequest, repo repository.Repo) BrankR
 		}
 	}
 	res, err := repo.Transactions.Find(map[string]interface{}{}, req.Page)
+
 	if err != nil {
 		log.Println("failed to load transactions", err)
 		return BrankResponse{
