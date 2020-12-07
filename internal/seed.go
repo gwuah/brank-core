@@ -51,4 +51,16 @@ func RunSeeds(db *gorm.DB) {
 		AccountID:   1,
 	})
 
+	// for i := 0; i < 60000; i++ {
+	// 	db.Create(&models.Transaction{
+	// 		Direction:   "credit",
+	// 		Amount:      5000,
+	// 		Description: "Incoming Transfer Clearance",
+	// 		Date:        time.Now(),
+	// 		Status:      "success",
+	// 		InquiryID:   1,
+	// 		AccountID:   1,
+	// 	})
+	// }
+
 }

@@ -110,5 +110,11 @@ func Paging(p *Param, result *[]models.Transaction) *TransactionPaginator {
 	} else {
 		paginator.NextPage = p.Page + 1
 	}
+
+	if count == 0 {
+		paginator.PrevPage = 0
+		paginator.NextPage = 0
+	}
+
 	return &paginator
 }
