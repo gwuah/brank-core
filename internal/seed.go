@@ -2,19 +2,48 @@ package internal
 
 import (
 	"brank/internal/models"
+	"errors"
+	"log"
 	"time"
 
 	"github.com/jinzhu/gorm/dialects/postgres"
 	"gorm.io/gorm"
 )
 
+func SeedBanks(db *gorm.DB) {
+	banks := []models.Bank{
+		{
+			Name:            "Standard Chartered",
+			Url:             "https://retail.sc.com/afr/ibank/gh/foa/login.htm",
+			HasRestEndpoint: Bool(false),
+		},
+		{
+			Name:            "Fidelity Bank",
+			Url:             "https://retailibank.fidelitybank.com.gh/auth/login",
+			HasRestEndpoint: Bool(true),
+		},
+		{
+			Name:            "First National Bank",
+			Url:             "https://www.firstnationalbank.com.gh/",
+			HasRestEndpoint: Bool(false),
+		},
+	}
+
+	for i := 0; i < len(banks); i++ {
+		bank := banks[i]
+		if err := db.Model(models.Bank{}).Where("name=?", bank.Name).First(&bank).Error; err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				db.Create(&bank)
+			} else {
+				log.Println("err is nil", err)
+			}
+		}
+	}
+}
+
 func RunSeeds(db *gorm.DB) {
 
-	db.Create(&models.Bank{
-		Name:            "Fidelity",
-		Url:             "http://google.com",
-		HasRestEndpoint: Bool(true),
-	})
+	SeedBanks(db)
 
 	db.Create(&models.Client{
 		AccessToken: "439y4y3g7ggr38r3grg37r",
@@ -51,16 +80,16 @@ func RunSeeds(db *gorm.DB) {
 		AccountID:   1,
 	})
 
-	// for i := 0; i < 60000; i++ {
-	// 	db.Create(&models.Transaction{
-	// 		Direction:   "credit",
-	// 		Amount:      5000,
-	// 		Description: "Incoming Transfer Clearance",
-	// 		Date:        time.Now(),
-	// 		Status:      "success",
-	// 		InquiryID:   1,
-	// 		AccountID:   1,
-	// 	})
-	// }
+	for i := 0; i < 6000; i++ {
+		db.Create(&models.Transaction{
+			Direction:   "credit",
+			Amount:      5000,
+			Description: "Incoming Transfer Clearance",
+			Date:        time.Now(),
+			Status:      "success",
+			InquiryID:   1,
+			AccountID:   1,
+		})
+	}
 
 }
