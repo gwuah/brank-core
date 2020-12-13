@@ -16,16 +16,19 @@ func SeedBanks(db *gorm.DB) {
 			Name:            "Standard Chartered",
 			Url:             "https://retail.sc.com/afr/ibank/gh/foa/login.htm",
 			HasRestEndpoint: Bool(false),
+			Code:            "scb",
 		},
 		{
 			Name:            "Fidelity Bank",
 			Url:             "https://retailibank.fidelitybank.com.gh/auth/login",
 			HasRestEndpoint: Bool(true),
+			Code:            "fb",
 		},
 		{
 			Name:            "First National Bank",
 			Url:             "https://www.firstnationalbank.com.gh/",
 			HasRestEndpoint: Bool(false),
+			Code:            "fnb",
 		},
 	}
 
