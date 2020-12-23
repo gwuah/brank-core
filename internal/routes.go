@@ -38,7 +38,7 @@ func (r *router) RegisterRoutes() {
 			return
 		}
 
-		response := HandleMessagePost(req, r.eStore)
+		response := PublishMessageIntoKafka(req, r.eStore)
 
 		if response.Error {
 			c.JSON(response.Code, gin.H{
