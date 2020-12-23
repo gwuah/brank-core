@@ -30,6 +30,7 @@ type Config struct {
 	REDIS_URL                 string
 	DATABASE_URL              string
 	PORT                      int
+	JWT_SIGNING_KEY           string
 	KAFKA_GROUP_ID            string
 	CLOUDKARAFKA_BROKERS      string
 	CLOUDKARAFKA_USERNAME     string
@@ -93,6 +94,7 @@ func NewConfig() *Config {
 		REDIS_URL:                 Get("REDIS_URL", ""),
 		DATABASE_URL:              Get("DATABASE_URL", ""),
 		PORT:                      GetInt("PORT", 5454),
+		JWT_SIGNING_KEY:           Get("JWT_SIGNING_KEY", "4RH93HFFUYFBY384V9F3Fbhbe3y34g36w7v37273v2tv32v73v2"),
 		KAFKA_GROUP_ID:            Get("KAFKA_GROUP_ID", "brank_mq"),
 		CLOUDKARAFKA_BROKERS:      Get("CLOUDKARAFKA_BROKERS", ""),
 		CLOUDKARAFKA_USERNAME:     Get("CLOUDKARAFKA_USERNAME", ""),

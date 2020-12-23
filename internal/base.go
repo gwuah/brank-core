@@ -4,6 +4,21 @@ type MessageRequest struct {
 	Message string `json:"message"`
 }
 
+type CreateClientRequest struct {
+	FirstName   string `json:"first_name"`
+	LastName    string `json:"last_name"`
+	Email       string `json:"email"`
+	Password    string `json:"password"`
+	CompanyName string `json:"company_name"`
+}
+
+type CreateAppRequest struct {
+	Name        string `json:"name"`
+	Logo        string `json:"logo"`
+	CallbackUrl string `json:"callback_url"`
+	ClientID    int    `json:"client_id"`
+}
+
 type TransactionsRequest struct {
 	CustomerId int `json:"customer_id"`
 	Page       int `json:"page"`
@@ -25,6 +40,7 @@ type BrankPagination struct {
 
 type BrankMeta struct {
 	Data       interface{}      `json:"data"`
+	Token      string           `json:"token,omitempty"`
 	Pagination *BrankPagination `json:"pagination,omitempty"`
 	Message    string           `json:"message"`
 }

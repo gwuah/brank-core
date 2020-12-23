@@ -3,9 +3,18 @@ package internal
 import (
 	"fmt"
 	"strconv"
+	"time"
 
+	"golang.org/x/crypto/bcrypt"
+
+	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 )
+
+type CustomClaims struct {
+	UserId string `json:"id"`
+	jwt.StandardClaims
+}
 
 func CORS() gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -39,4 +48,28 @@ func Bool(b bool) *bool {
 
 func GenerateTopic(topic string) string {
 	return fmt.Sprintf("%s%s", Get("CLOUDKARAFKA_TOPIC_PREFIX", ""), topic)
+}
+
+func Hash(value string) (string, error) {
+	bytes, err := bcrypt.GenerateFromPassword([]byte(value), 10)
+	return string(bytes), err
+}
+
+func VerifyHash(hash, value string) bool {
+	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(value))
+	return err == nil
+}
+
+func generateToken(id string, key string) (string, error) {
+
+	const expirationHours = 24 * 90
+	claims := CustomClaims{
+		UserId: id,
+		StandardClaims: jwt.StandardClaims{
+			ExpiresAt: time.Now().Add(time.Hour * expirationHours).Unix(),
+			IssuedAt:  jwt.TimeFunc().Unix(),
+		},
+	}
+	token := jwt.NewWithClaims(jwt.SigningMethodHS512, claims)
+	return token.SignedString([]byte(key))
 }
