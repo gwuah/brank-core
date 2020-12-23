@@ -1,8 +1,6 @@
 package internal
 
 import (
-	"brank/internal/repository"
-	"log"
 	"net/http"
 )
 
@@ -22,48 +20,48 @@ func HandleMessagePost(req MessageRequest, e EventStore) BrankResponse {
 
 }
 
-func HandleGetTransactions(req TransactionsRequest, repo repository.Repo) BrankResponse {
-	_, err := repo.Customers.FindById(req.CustomerId)
-	if err != nil {
-		log.Println("failed to load transactions", err)
-		return BrankResponse{
-			Error: true,
-			Code:  http.StatusNotFound,
-			Meta: BrankMeta{
-				Data:    map[string]interface{}{},
-				Message: "customer not found",
-			},
-		}
-	}
-	res, err := repo.Transactions.Find(map[string]interface{}{
-		// "direction": "debit",
-	}, req.Page)
+// func HandleGetTransactions(req TransactionsRequest, repo repository.Repo) BrankResponse {
+// 	_, err := repo.Customers.FindById(req.CustomerId)
+// 	if err != nil {
+// 		log.Println("failed to load transactions", err)
+// 		return BrankResponse{
+// 			Error: true,
+// 			Code:  http.StatusNotFound,
+// 			Meta: BrankMeta{
+// 				Data:    map[string]interface{}{},
+// 				Message: "customer not found",
+// 			},
+// 		}
+// 	}
+// 	res, err := repo.Transactions.Find(map[string]interface{}{
+// 		// "direction": "debit",
+// 	}, req.Page)
 
-	if err != nil {
-		log.Println("failed to load transactions", err)
-		return BrankResponse{
-			Error: true,
-			Code:  http.StatusInternalServerError,
-			Meta: BrankMeta{
-				Data:    map[string]interface{}{},
-				Message: "failed to load transactions",
-			},
-		}
-	}
+// 	if err != nil {
+// 		log.Println("failed to load transactions", err)
+// 		return BrankResponse{
+// 			Error: true,
+// 			Code:  http.StatusInternalServerError,
+// 			Meta: BrankMeta{
+// 				Data:    map[string]interface{}{},
+// 				Message: "failed to load transactions",
+// 			},
+// 		}
+// 	}
 
-	return BrankResponse{
-		Error: false,
-		Code:  http.StatusOK,
-		Meta: BrankMeta{
-			Data: res.Records,
-			Pagination: &BrankPagination{
-				Count:        res.TotalRecord,
-				NextPage:     res.NextPage,
-				CurrentPage:  res.Page,
-				PreviousPage: res.PrevPage,
-			},
-			Message: "transactionsyyy successfully retrieved",
-		},
-	}
+// 	return BrankResponse{
+// 		Error: false,
+// 		Code:  http.StatusOK,
+// 		Meta: BrankMeta{
+// 			Data: res.Records,
+// 			Pagination: &BrankPagination{
+// 				Count:        res.TotalRecord,
+// 				NextPage:     res.NextPage,
+// 				CurrentPage:  res.Page,
+// 				PreviousPage: res.PrevPage,
+// 			},
+// 			Message: "transactionsyyy successfully retrieved",
+// 		},
+// 	}
 
-}
+// }

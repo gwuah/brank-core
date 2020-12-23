@@ -48,24 +48,24 @@ func (r *router) RegisterRoutes() {
 		c.JSON(response.Code, response)
 	})
 
-	r.engine.GET("/transactions/:customerId", func(c *gin.Context) {
-		page := "1"
-		if c.Query("page") != "" {
-			page = c.Query("page")
-		}
+	// r.engine.GET("/transactions/:customerId", func(c *gin.Context) {
+	// 	page := "1"
+	// 	if c.Query("page") != "" {
+	// 		page = c.Query("page")
+	// 	}
 
-		response := HandleGetTransactions(TransactionsRequest{
-			CustomerId: ConvertToInt(c.Param("customerId")),
-			Page:       ConvertToInt(page),
-		}, r.repo)
+	// 	response := HandleGetTransactions(TransactionsRequest{
+	// 		CustomerId: ConvertToInt(c.Param("customerId")),
+	// 		Page:       ConvertToInt(page),
+	// 	}, r.repo)
 
-		if response.Error {
-			c.JSON(response.Code, gin.H{
-				"message": response.Meta.Message,
-			})
-			return
-		}
+	// 	if response.Error {
+	// 		c.JSON(response.Code, gin.H{
+	// 			"message": response.Meta.Message,
+	// 		})
+	// 		return
+	// 	}
 
-		c.JSON(response.Code, response.Meta)
-	})
+	// 	c.JSON(response.Code, response.Meta)
+	// })
 }
