@@ -94,6 +94,50 @@ func (r *router) RegisterRoutes() {
 
 	})
 
+	r.engine.POST("/exchange", func(c *gin.Context) {
+		var req ExchangeContractCode
+		if err := c.ShouldBindJSON(&req); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"status": "bad request",
+			})
+			return
+		}
+
+		response := ExchageContractCode(req, r.repo, r.config, r.eStore)
+
+		if response.Error {
+			c.JSON(response.Code, gin.H{
+				"message": response.Meta.Message,
+			})
+			return
+		}
+
+		c.JSON(response.Code, response.Meta)
+
+	})
+
+	r.engine.POST("/link-account", func(c *gin.Context) {
+		var req LinkAccountRequest
+		if err := c.ShouldBindJSON(&req); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"status": "bad request",
+			})
+			return
+		}
+
+		response := LinkAccount(req, r.repo, r.config, r.eStore)
+
+		if response.Error {
+			c.JSON(response.Code, gin.H{
+				"message": response.Meta.Message,
+			})
+			return
+		}
+
+		c.JSON(response.Code, response.Meta)
+
+	})
+
 	// r.engine.GET("/transactions/:customerId", func(c *gin.Context) {
 	// 	page := "1"
 	// 	if c.Query("page") != "" {

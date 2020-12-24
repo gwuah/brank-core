@@ -22,3 +22,10 @@ func (r *clientApplicationLayer) Create(app *models.App) error {
 	}
 	return nil
 }
+
+func (r *clientApplicationLayer) Update(app *models.App) error {
+	if err := r.db.Save(&app).Error; err != nil {
+		return err
+	}
+	return nil
+}

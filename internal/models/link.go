@@ -7,10 +7,9 @@ type Link struct {
 	Raw      postgres.Jsonb `json:"raw"`
 	Code     string         `json:"code"`
 	BankID   int            `json:"bank_id"`
-	Bank     Bank           `json:"bank,omitempty"`
+	Bank     *Bank          `json:"bank,omitempty"`
 	AppID    int            `json:"app_id"`
-	App      App            `json:"app,omitempty"`
-	Hash     string         `json:"hash"`
+	App      *App           `json:"app,omitempty"`
 	Username string         `json:"username"`
 	Password string         `json:"password"`
 }

@@ -3,7 +3,6 @@ package internal
 import (
 	"brank/internal/repository"
 	"errors"
-	"fmt"
 	"log"
 	"net/http"
 
@@ -65,7 +64,7 @@ func CreateClient(req CreateClientRequest, e repository.Repo, c *Config) BrankRe
 		}
 	}
 
-	token, err := generateToken(fmt.Sprintf("%v", client.ID), c.JWT_SIGNING_KEY)
+	token, err := generateClientAuthToken(client.ID, c.JWT_SIGNING_KEY)
 	if err != nil {
 		log.Println("failed to generate token", err)
 		return BrankResponse{
@@ -82,8 +81,10 @@ func CreateClient(req CreateClientRequest, e repository.Repo, c *Config) BrankRe
 		Error: false,
 		Code:  http.StatusOK,
 		Meta: BrankMeta{
-			Data:    client,
-			Token:   token,
+			Data: map[string]interface{}{
+				"token":  token,
+				"client": client,
+			},
 			Message: "client created successfully",
 		},
 	}

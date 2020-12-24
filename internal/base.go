@@ -19,6 +19,17 @@ type CreateAppRequest struct {
 	ClientID    int    `json:"client_id"`
 }
 
+type LinkAccountRequest struct {
+	BankID    string `json:"bank_id"`
+	PublicKey string `json:"public_key"`
+	Username  string `json:"username"`
+	Password  string `json:"password"`
+}
+
+type ExchangeContractCode struct {
+	Code string `json:"code"`
+}
+
 type TransactionsRequest struct {
 	CustomerId int `json:"customer_id"`
 	Page       int `json:"page"`
@@ -40,7 +51,6 @@ type BrankPagination struct {
 
 type BrankMeta struct {
 	Data       interface{}      `json:"data"`
-	Token      string           `json:"token,omitempty"`
 	Pagination *BrankPagination `json:"pagination,omitempty"`
 	Message    string           `json:"message"`
 }

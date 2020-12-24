@@ -1,7 +1,11 @@
 package internal
 
 import (
+	crypto_rand "crypto/rand"
+	"encoding/binary"
 	"fmt"
+
+	"math/rand"
 	"strconv"
 	"time"
 
@@ -12,7 +16,8 @@ import (
 )
 
 type CustomClaims struct {
-	UserId string `json:"id"`
+	AppID    int `json:"app_id"`
+	ClientID int `json:"client_id"`
 	jwt.StandardClaims
 }
 
@@ -60,11 +65,10 @@ func VerifyHash(hash, value string) bool {
 	return err == nil
 }
 
-func generateToken(id string, key string) (string, error) {
-
+func generateClientAuthToken(ClientID int, key string) (string, error) {
 	const expirationHours = 24 * 90
 	claims := CustomClaims{
-		UserId: id,
+		ClientID: ClientID,
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: time.Now().Add(time.Hour * expirationHours).Unix(),
 			IssuedAt:  jwt.TimeFunc().Unix(),
@@ -72,4 +76,44 @@ func generateToken(id string, key string) (string, error) {
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS512, claims)
 	return token.SignedString([]byte(key))
+}
+
+func generateAppAccessToken(appId int, clientId int, key string) (string, error) {
+	claims := CustomClaims{
+		AppID:    appId,
+		ClientID: clientId,
+		StandardClaims: jwt.StandardClaims{
+			IssuedAt: jwt.TimeFunc().Unix(),
+		},
+	}
+	token := jwt.NewWithClaims(jwt.SigningMethodHS512, claims)
+	return token.SignedString([]byte(key))
+}
+
+const charset = "0123456789"
+
+func Seed() int64 {
+	var b [8]byte
+	_, err := crypto_rand.Read(b[:])
+	if err != nil {
+		panic("cannot Seed math/rand package with cryptographically secure random number generator")
+	}
+	return int64(binary.LittleEndian.Uint64(b[:]))
+}
+
+func StringWithCharset(prefix string, length int, charset string) string {
+	b := make([]byte, length)
+	var seededRand = rand.New(rand.NewSource(Seed()))
+	for i := range b {
+		b[i] = charset[seededRand.Intn(len(charset))]
+	}
+	return fmt.Sprintf("%s%s", prefix, string(b))
+}
+
+func NewPublicKey(name string) string {
+	return StringWithCharset(fmt.Sprintf("%s-", name), 12, charset)
+}
+
+func GenerateExchangeCode() string {
+	return StringWithCharset("", 8, charset)
 }

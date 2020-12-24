@@ -135,6 +135,6 @@ func NewConfig() *Config {
 		NVOFBkpdn627G190
 		-----END CERTIFICATE-----`),
 		ENVIRONMENT: GetEnvironment(),
-		RUN_SEEDS:   false,
+		RUN_SEEDS:   true,
 	}
 }
