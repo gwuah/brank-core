@@ -1,19 +1,23 @@
 package main
 
 import (
-	"brank/internal"
-	"brank/internal/models"
-	"brank/internal/repository"
-	"brank/internal/storage"
+	"brank/core"
+	"brank/core/models"
+	"brank/core/mq"
+	"brank/core/queue"
+	"brank/core/storage"
+	"brank/core/utils"
+	"brank/repository"
+	"brank/routes"
+	"brank/services"
 	"fmt"
 
 	"log"
 )
 
 func main() {
-	config := internal.NewConfig()
-
-	pg, err := storage.NewPostgres(config)
+	c := core.NewConfig()
+	pg, err := storage.NewPostgres(c)
 	if err != nil {
 		log.Fatal("postgres conn failed", err)
 	}
@@ -26,23 +30,36 @@ func main() {
 		&models.Account{},
 		&models.Link{},
 		&models.App{},
+		&models.Customer{},
 	)
-
-	if config.RUN_SEEDS {
-		log.Println("Running seeds")
-		internal.RunSeeds(pg)
+	if err != nil {
+		log.Fatal("failed to run migrations. err", err)
 	}
 
-	kvStore := storage.NewRedis(config)
+	if c.RUN_SEEDS {
+		log.Println("Running seeds")
+		models.RunSeeds(pg)
+	}
 
-	eventStore := internal.NewEventStore(config)
-	repository := repository.NewRepo(pg)
+	cache := storage.NewRedis(c)
+	r := repository.NewRepo(pg)
 
-	server := internal.NewHTTPServer(config)
-	router := internal.NewRouter(server.Engine, eventStore, kvStore, repository, config)
+	mq, err := mq.NewMQ(c)
+	if err != nil {
+		log.Fatal("failed to initialize messaging queue. err", err)
+	}
+
+	q, err := queue.NewQue(c)
+	if err != nil {
+		log.Fatal("failed to initialize queue. err", err)
+	}
+
+	s := services.NewService(r, c, mq)
+	server := core.NewHTTPServer(c)
+	router := routes.NewRouter(server.Engine, mq, cache, r, q, c, s)
 
 	go func() {
-		stream := eventStore.Subscribe([]string{internal.GenerateTopic("validate_login")})
+		stream := mq.Subscribe([]string{utils.GenerateTopic("validate_login")})
 		for {
 			select {
 			case msg := <-stream:
