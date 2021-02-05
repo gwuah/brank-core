@@ -3,6 +3,7 @@ package queue
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"time"
 
 	"brank/core"
@@ -10,6 +11,17 @@ import (
 
 	"github.com/bgentry/que-go"
 	"github.com/jackc/pgx"
+)
+
+type JobIdentifier string
+
+func (i JobIdentifier) String() string {
+	return string(i)
+}
+
+const (
+	FidelityJob JobIdentifier = "fidelity_job"
+	WebhookJob  JobIdentifier = "webhook_job"
 )
 
 type (
@@ -46,8 +58,8 @@ func getPgxPool(dbUri string) (*pgx.ConnPool, error) {
 	return pgxpool, nil
 }
 
-func NewQue(config *core.Config) (*Que, error) {
-	q := &Que{dbURI: storage.GeneratePostgresURI(config)}
+func NewQue(c *core.Config) (*Que, error) {
+	q := &Que{dbURI: storage.GeneratePostgresURI(c), config: c}
 	pgxpool, err := getPgxPool(q.dbURI)
 	if err != nil {
 		return nil, err
@@ -58,13 +70,14 @@ func NewQue(config *core.Config) (*Que, error) {
 }
 
 func (q *Que) Close() {
+	log.Println("shutting down queue")
 	q.connPool.Close()
 }
 
 func (q *Que) RegisterJobs(jobList []JobWorker) *que.WorkerPool {
 	wm := que.WorkMap{}
 	for _, j := range jobList {
-		wm[string(j.Identifier())] = j.Worker()
+		wm[j.Identifier().String()] = j.Worker()
 	}
 	return que.NewWorkerPool(q.client, wm, q.config.WORKER_POOL_SIZE)
 }
@@ -72,12 +85,12 @@ func (q *Que) RegisterJobs(jobList []JobWorker) *que.WorkerPool {
 func (q *Que) QueueJob(jobType JobIdentifier, payload interface{}) error {
 	enc, err := json.Marshal(payload)
 	if err != nil {
-		return fmt.Errorf("%w, %s", err, "Marshalling the EmailJobRequest")
+		return err
 	}
 	j := que.Job{Type: jobType.String(), Args: enc}
 	err = q.client.Enqueue(&j)
 	if err != nil {
-		return fmt.Errorf("%w, %s", err, "Enqueueing Job")
+		return fmt.Errorf("failed to queue job. err: %w", err)
 	}
 	return nil
 }
@@ -85,13 +98,13 @@ func (q *Que) QueueJob(jobType JobIdentifier, payload interface{}) error {
 func (q *Que) QueueFutureJob(jobType JobIdentifier, payload interface{}, times ...time.Time) error {
 	enc, err := json.Marshal(payload)
 	if err != nil {
-		return fmt.Errorf("%w, %s", err, "Marshalling the EmailJobRequest")
+		return err
 	}
 	for _, time := range times {
 		j := que.Job{Type: jobType.String(), Args: enc, RunAt: time}
 		err = q.client.Enqueue(&j)
 		if err != nil {
-			return fmt.Errorf("%w, %s", err, "Enqueueing Job")
+			return fmt.Errorf("failed to queue job. err: %w", err)
 		}
 	}
 

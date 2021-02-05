@@ -13,7 +13,7 @@ import (
 	"github.com/ledongthuc/pdf"
 )
 
-func New(a axios.Axios) *Integration {
+func New(a *axios.Axios) *Integration {
 	return &Integration{
 		axios:                      a,
 		loginEndpoint:              "https://retailibank.fidelitybank.com.gh/mmrib/auth/init",

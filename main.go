@@ -7,6 +7,8 @@ import (
 	"brank/core/queue"
 	"brank/core/storage"
 	"brank/core/utils"
+	que_workers "brank/core/workers"
+
 	"brank/repository"
 	"brank/routes"
 	"brank/services"
@@ -53,6 +55,12 @@ func main() {
 	if err != nil {
 		log.Fatal("failed to initialize queue. err", err)
 	}
+	workers := q.RegisterJobs(
+		[]queue.JobWorker{
+			que_workers.NewFidelityWorker(),
+		},
+	)
+	go workers.Start()
 
 	s := services.NewService(r, c, mq)
 	server := core.NewHTTPServer(c)
@@ -69,5 +77,9 @@ func main() {
 	}()
 
 	router.RegisterRoutes()
-	server.Start()
+	server.Start(func() {
+		workers.Shutdown()
+		q.Close()
+	})
+
 }

@@ -83,7 +83,7 @@ func load() {
 func NewConfig() *Config {
 	load()
 	return &Config{
-		WORKER_POOL_SIZE:          GetInt("WORKER_POOL_SIZE", 10),
+		WORKER_POOL_SIZE:          GetInt("WORKER_POOL_SIZE", 5),
 		PG_HOST:                   Get("PG_HOST", "localhost"),
 		PG_PORT:                   Get("PG_PORT", "5432"),
 		PG_NAME:                   Get("PG_NAME", "oka_dev"),

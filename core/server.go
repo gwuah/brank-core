@@ -29,7 +29,7 @@ func NewHTTPServer(cfg *Config) *Server {
 	}
 }
 
-func (s *Server) Start() {
+func (s *Server) Start(cleanup func()) {
 
 	h := &http.Server{
 		Addr:    fmt.Sprintf(":%v", s.config.PORT),
@@ -54,4 +54,6 @@ func (s *Server) Start() {
 			log.Println("Unexpected Server Shutdown")
 		}
 	}
+
+	cleanup()
 }

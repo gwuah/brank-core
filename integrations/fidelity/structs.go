@@ -3,7 +3,7 @@ package fidelity
 import "brank/core/axios"
 
 type Integration struct {
-	axios                      axios.Axios
+	axios                      *axios.Axios
 	loginEndpoint              string
 	verifyOtpEndpoint          string
 	balanceEndpoint            string
