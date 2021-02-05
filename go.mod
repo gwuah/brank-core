@@ -13,7 +13,7 @@ require (
 	github.com/jackc/pgx v3.6.2+incompatible
 	github.com/jinzhu/gorm v1.9.16
 	github.com/joho/godotenv v1.3.0
-	github.com/ledongthuc/pdf v0.0.0-20200323191019-23c5852adbd2 // indirect
+	github.com/ledongthuc/pdf v0.0.0-20200323191019-23c5852adbd2
 	github.com/onsi/ginkgo v1.14.2 // indirect
 	github.com/onsi/gomega v1.10.3 // indirect
 	golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9
