@@ -32,6 +32,28 @@ func RegisterLinkRoutes(e *gin.RouterGroup, s services.Services) {
 
 	})
 
+	e.POST("/otp", func(c *gin.Context) {
+		var req core.VerifyOTPRequest
+		if err := c.ShouldBindJSON(&req); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"status": "bad request",
+			})
+			return
+		}
+
+		response := s.Links.VerifyOTP(req)
+
+		if response.Error {
+			c.JSON(response.Code, gin.H{
+				"message": response.Meta.Message,
+			})
+			return
+		}
+
+		c.JSON(response.Code, response.Meta)
+
+	})
+
 	e.POST("/exchange", func(c *gin.Context) {
 		var req core.ExchangeContractCode
 		if err := c.ShouldBindJSON(&req); err != nil {

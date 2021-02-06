@@ -4,7 +4,9 @@ import (
 	"brank/core"
 	"brank/core/auth"
 	"brank/core/models"
+	"brank/core/queue"
 	"brank/core/utils"
+	worker "brank/core/workers"
 	"brank/integrations"
 	"brank/repository"
 	"errors"
@@ -20,14 +22,16 @@ type linkLayer struct {
 	repo         repository.Repo
 	config       *core.Config
 	integrations integrations.Integrations
+	q            *queue.Que
 }
 
-func newLinkLayer(r repository.Repo, c *core.Config, kv *redis.Client, i integrations.Integrations) *linkLayer {
+func newLinkLayer(r repository.Repo, c *core.Config, kv *redis.Client, q *queue.Que, i integrations.Integrations) *linkLayer {
 	return &linkLayer{
 		repo:         r,
 		config:       c,
 		integrations: i,
 		cache:        kv,
+		q:            q,
 	}
 }
 
@@ -147,6 +151,10 @@ func (l *linkLayer) VerifyOTP(req core.VerifyOTPRequest) core.BrankResponse {
 		}
 
 		if status {
+			if err := l.q.QueueJob(worker.FidelityJob, worker.CreateFidelityJob(link.ID)); err != nil {
+				return utils.Error(err, nil, http.StatusInternalServerError)
+			}
+
 			return utils.Success(&map[string]interface{}{
 				"code": link.Code,
 			}, utils.String("otp verification successful"))

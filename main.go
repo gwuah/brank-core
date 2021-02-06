@@ -61,12 +61,12 @@ func main() {
 	}
 	workers := q.RegisterJobs(
 		[]queue.JobWorker{
-			que_workers.NewFidelityWorker(),
+			que_workers.NewFidelityWorker(integrations),
 		},
 	)
 	go workers.Start()
 
-	s := services.NewService(r, c, mq, cache, *integrations)
+	s := services.NewService(r, c, mq, cache, q, *integrations)
 	server := core.NewHTTPServer(c)
 	router := routes.NewRouter(server.Engine, mq, cache, r, q, c, s)
 

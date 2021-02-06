@@ -19,11 +19,6 @@ func (i JobIdentifier) String() string {
 	return string(i)
 }
 
-const (
-	FidelityJob JobIdentifier = "fidelity_job"
-	WebhookJob  JobIdentifier = "webhook_job"
-)
-
 type (
 	JobWorker interface {
 		Identifier() JobIdentifier

@@ -3,6 +3,7 @@ package services
 import (
 	"brank/core"
 	"brank/core/mq"
+	"brank/core/queue"
 	"brank/integrations"
 	"brank/repository"
 
@@ -17,11 +18,11 @@ type Services struct {
 	Transactions      *transactionsLayer
 }
 
-func NewService(r repository.Repo, c *core.Config, mq mq.MQ, kv *redis.Client, i integrations.Integrations) Services {
+func NewService(r repository.Repo, c *core.Config, mq mq.MQ, kv *redis.Client, q *queue.Que, i integrations.Integrations) Services {
 	return Services{
 		Clients:           newClientLayer(r, c),
 		ClientApplication: newClientApplicationLayer(r, c),
-		Links:             newLinkLayer(r, c, kv, i),
+		Links:             newLinkLayer(r, c, kv, q, i),
 		Brank:             newBrankLayer(r, c, mq),
 		Transactions:      newTransactionLayer(r, c),
 	}
