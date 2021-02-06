@@ -69,7 +69,6 @@ func (f *Integration) VerifyOtp(otp string) (bool, *HTTPResponse, error) {
 	}
 
 	res, err := f.axios.Post(context.Background(), f.verifyOtpEndpoint, reqBody)
-
 	if err != nil {
 		return false, nil, err
 	}

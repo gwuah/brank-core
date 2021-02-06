@@ -128,12 +128,14 @@ func (l *linkLayer) VerifyOTP(req core.VerifyOTPRequest) core.BrankResponse {
 
 	switch bank.Code {
 	case models.FidelityBank:
-		status, response, err := l.integrations.Fidelity.VerifyOtp(req.Otp)
+
+		meta, err := link.GetMeta()
 		if err != nil {
 			return utils.Error(err, nil, http.StatusInternalServerError)
 		}
 
-		meta, err := link.GetMeta()
+		l.integrations.Fidelity.SetBearerToken(meta.Fidelity.Init.Token)
+		status, response, err := l.integrations.Fidelity.VerifyOtp(req.Otp)
 		if err != nil {
 			return utils.Error(err, nil, http.StatusInternalServerError)
 		}
