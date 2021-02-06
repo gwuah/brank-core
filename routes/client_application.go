@@ -32,4 +32,20 @@ func RegisterClientApplicationRoutes(e *gin.RouterGroup, s services.Services) {
 
 	})
 
+	e.GET("/:public_key", func(c *gin.Context) {
+		publicKey := c.Param("public_key")
+
+		response := s.ClientApplication.GetByPublicKey(publicKey)
+
+		if response.Error {
+			c.JSON(response.Code, gin.H{
+				"message": response.Meta.Message,
+			})
+			return
+		}
+
+		c.JSON(response.Code, response.Meta)
+
+	})
+
 }

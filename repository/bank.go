@@ -23,3 +23,11 @@ func (r *bankLayer) FindById(id int) (*models.Bank, error) {
 	}
 	return &bank, nil
 }
+
+func (r *bankLayer) All() (*[]models.Bank, error) {
+	var banks []models.Bank
+	if err := r.db.Debug().Find(&banks).Error; err != nil {
+		return &banks, err
+	}
+	return &banks, nil
+}

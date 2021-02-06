@@ -37,3 +37,17 @@ func (b *brankLayer) PublishMessageIntoKafka(req core.MessageRequest) core.Brank
 	}
 
 }
+
+func (b *brankLayer) GetFinancialInstitutions() core.BrankResponse {
+
+	banks, err := b.repo.Bank.All()
+
+	if err != nil {
+		return utils.Error(nil, nil, http.StatusInternalServerError)
+	}
+
+	return utils.Success(&map[string]interface{}{
+		"institutions": banks,
+	}, utils.String("financial institutions successfully retrieved"))
+
+}

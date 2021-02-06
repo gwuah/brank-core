@@ -16,16 +16,24 @@ func newClientApplicationLayer(db *gorm.DB) *clientApplicationLayer {
 	}
 }
 
-func (r *clientApplicationLayer) Create(app *models.App) error {
-	if err := r.db.Create(app).Error; err != nil {
+func (ca *clientApplicationLayer) Create(app *models.App) error {
+	if err := ca.db.Create(app).Error; err != nil {
 		return err
 	}
 	return nil
 }
 
-func (r *clientApplicationLayer) Update(app *models.App) error {
-	if err := r.db.Save(&app).Error; err != nil {
+func (ca *clientApplicationLayer) Update(app *models.App) error {
+	if err := ca.db.Save(&app).Error; err != nil {
 		return err
 	}
 	return nil
+}
+
+func (ca *clientApplicationLayer) FindByPublicKey(key string) (*models.App, error) {
+	app := models.App{PublicKey: key}
+	if err := ca.db.Where("public_key = ?", key).First(&app).Error; err != nil {
+		return &app, err
+	}
+	return &app, nil
 }

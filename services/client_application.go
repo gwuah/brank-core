@@ -4,6 +4,7 @@ import (
 	"brank/core"
 	"brank/core/auth"
 	"brank/core/models"
+	"brank/core/utils"
 	"brank/repository"
 	"log"
 	"net/http"
@@ -79,4 +80,15 @@ func (c *clientApplicationLayer) CreateApp(req core.CreateAppRequest) core.Brank
 			Message: "client application created successfully",
 		},
 	}
+}
+
+func (c *clientApplicationLayer) GetByPublicKey(key string) core.BrankResponse {
+	app, err := c.repo.ClientApplication.FindByPublicKey(key)
+	if err != nil {
+		return utils.Error(err, utils.String("not found"), http.StatusNotFound)
+	}
+
+	return utils.Success(&map[string]interface{}{
+		"app": app,
+	}, nil)
 }
