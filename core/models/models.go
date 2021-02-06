@@ -1,6 +1,7 @@
 package models
 
 import (
+	"brank/integrations/fidelity"
 	"encoding/json"
 	"time"
 
@@ -113,9 +114,17 @@ type Inquiry struct {
 	Link   Link           `json:"link,omitempty"`
 }
 
+type Fidelity struct {
+	Init fidelity.HTTPResponse `json:"init"`
+	Otp  fidelity.HTTPResponse `json:"otp"`
+}
+
+type LinkMeta struct {
+	Fidelity Fidelity `json:"fidelity"`
+}
+
 type Link struct {
 	Model
-	Raw      postgres.Jsonb `json:"raw"`
 	Code     string         `json:"code"`
 	BankID   int            `json:"bank_id"`
 	Bank     *Bank          `json:"bank,omitempty"`
@@ -123,6 +132,27 @@ type Link struct {
 	App      *App           `json:"app,omitempty"`
 	Username string         `json:"username"`
 	Password string         `json:"password"`
+	Meta     postgres.Jsonb `json:"meta"`
+}
+
+func (b *Link) GetMeta() (*LinkMeta, error) {
+	m := LinkMeta{}
+	if len(b.Meta.RawMessage) > 0 {
+		err := json.Unmarshal(b.Meta.RawMessage, &m)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return &m, nil
+}
+
+func (b *Link) CommitMeta(m *LinkMeta) error {
+	converted, err := json.Marshal(m)
+	if err != nil {
+		return err
+	}
+	b.Meta = postgres.Jsonb{RawMessage: converted}
+	return nil
 }
 
 type Transaction struct {

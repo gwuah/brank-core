@@ -66,7 +66,7 @@ func main() {
 	)
 	go workers.Start()
 
-	s := services.NewService(r, c, mq, *integrations)
+	s := services.NewService(r, c, mq, cache, *integrations)
 	server := core.NewHTTPServer(c)
 	router := routes.NewRouter(server.Engine, mq, cache, r, q, c, s)
 

@@ -5,6 +5,8 @@ import (
 	"brank/core/mq"
 	"brank/integrations"
 	"brank/repository"
+
+	"github.com/go-redis/redis"
 )
 
 type Services struct {
@@ -15,11 +17,11 @@ type Services struct {
 	Transactions      *transactionsLayer
 }
 
-func NewService(r repository.Repo, c *core.Config, mq mq.MQ, i integrations.Integrations) Services {
+func NewService(r repository.Repo, c *core.Config, mq mq.MQ, kv *redis.Client, i integrations.Integrations) Services {
 	return Services{
 		Clients:           newClientLayer(r, c),
 		ClientApplication: newClientApplicationLayer(r, c),
-		Links:             newLinkLayer(r, c, i),
+		Links:             newLinkLayer(r, c, kv, i),
 		Brank:             newBrankLayer(r, c, mq),
 		Transactions:      newTransactionLayer(r, c),
 	}

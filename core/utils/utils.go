@@ -12,12 +12,17 @@ import (
 	"strconv"
 
 	"github.com/dgrijalva/jwt-go"
+	"github.com/rs/xid"
 )
 
 type CustomClaims struct {
 	AppID    int `json:"app_id"`
 	ClientID int `json:"client_id"`
 	jwt.StandardClaims
+}
+
+func GenerateUUID() string {
+	return xid.New().String()
 }
 
 func ConvertToUint64(num string) uint64 {

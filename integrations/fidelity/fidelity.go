@@ -28,7 +28,7 @@ func (f *Integration) SetBearerToken(token string) {
 	f.axios.SetBearerToken(token)
 }
 
-func (f *Integration) verifyLogin(username, password string) (bool, *HTTPResponse, error) {
+func (f *Integration) VerifyLogin(username, password string) (bool, *HTTPResponse, error) {
 	reqBody := map[string]string{
 		"phoneNumber":        username,
 		"password":           password,
@@ -53,8 +53,7 @@ func (f *Integration) verifyLogin(username, password string) (bool, *HTTPRespons
 		return false, nil, nil
 	} else if res.StatusCode == 200 {
 		var response HTTPResponse
-		err := json.Unmarshal(body, &response)
-		if err != nil {
+		if err := json.Unmarshal(body, &response); err != nil {
 			return false, nil, errors.New("failed to unmarshal fidelity reponse")
 		}
 		return true, &response, nil
@@ -64,7 +63,7 @@ func (f *Integration) verifyLogin(username, password string) (bool, *HTTPRespons
 
 }
 
-func (f *Integration) verifyOtp(otp string) (bool, *HTTPResponse, error) {
+func (f *Integration) VerifyOtp(otp string) (bool, *HTTPResponse, error) {
 	reqBody := map[string]string{
 		"otp": otp,
 	}
@@ -87,8 +86,7 @@ func (f *Integration) verifyOtp(otp string) (bool, *HTTPResponse, error) {
 		return false, nil, nil
 	} else if res.StatusCode == 200 {
 		var response HTTPResponse
-		err := json.Unmarshal(body, &response)
-		if err != nil {
+		if err := json.Unmarshal(body, &response); err != nil {
 			return false, nil, errors.New("failed to unmarshal fidelity reponse")
 		}
 		return true, &response, nil
@@ -97,7 +95,7 @@ func (f *Integration) verifyOtp(otp string) (bool, *HTTPResponse, error) {
 	return false, nil, nil
 }
 
-func (f *Integration) getBalance() (bool, *HTTPResponse, error) {
+func (f *Integration) GetBalance() (bool, *HTTPResponse, error) {
 	res, err := f.axios.Get(context.Background(), f.balanceEndpoint)
 
 	if err != nil {
@@ -126,7 +124,7 @@ func (f *Integration) getBalance() (bool, *HTTPResponse, error) {
 	return false, nil, nil
 }
 
-func (f *Integration) downloadStatement(accountId int, start, end string) ([]byte, error) {
+func (f *Integration) DownloadStatement(accountId int, start, end string) ([]byte, error) {
 	var body []byte
 	res, err := f.axios.Get(context.Background(), fmt.Sprint(f.balanceEndpoint, accountId, start, end))
 
@@ -149,7 +147,7 @@ func (f *Integration) downloadStatement(accountId int, start, end string) ([]byt
 	return body, nil
 }
 
-func (f *Integration) processPDF(body []byte) error {
+func (f *Integration) ProcessPDF(body []byte) error {
 	var tree TransactionTree
 
 	bytesWithReader := bytes.NewReader(body)

@@ -26,6 +26,11 @@ type LinkAccountRequest struct {
 	Password  string `json:"password"`
 }
 
+type VerifyOTPRequest struct {
+	SessionID int    `json:"session_id"`
+	Otp       string `json:"otp"`
+}
+
 type ExchangeContractCode struct {
 	Code string `json:"code"`
 }
