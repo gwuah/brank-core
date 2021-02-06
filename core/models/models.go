@@ -1,6 +1,7 @@
 package models
 
 import (
+	"encoding/json"
 	"time"
 
 	"github.com/jinzhu/gorm/dialects/postgres"
@@ -41,15 +42,53 @@ type App struct {
 	Logo        string `json:"logo"`
 	CallbackUrl string `json:"callback_url"`
 	AccessToken string `json:"access_token"`
-	ClientID    int    `json:"client"`
+	ClientID    int    `json:"client_id"`
+}
+
+type FormConfig struct {
+	ID          int    `json:"id"`
+	Type        string `json:"type"`
+	Label       string `json:"label,omitempty"`
+	Required    bool   `json:"required"`
+	Placeholder string `json:"placeholder,omitempty"`
+	Value       string `json:"value,omitempty"`
+}
+
+type LinkConfiguration struct {
+	Otp     []FormConfig `json:"otp"`
+	Initial []FormConfig `json:"initial"`
+}
+
+type BankMeta struct {
+	FormConfiguration LinkConfiguration `json:"link_configuration"`
 }
 
 type Bank struct {
 	Model
-	Code            string `json:"code"`
-	Name            string `json:"name"`
-	Url             string `json:"url"`
-	HasRestEndpoint *bool  `json:"has_rest_endpoint"`
+	Code        string         `json:"code"`
+	Name        string         `json:"name"`
+	RequiresOtp *bool          `json:"requires_otp"`
+	Meta        postgres.Jsonb `json:"meta"`
+}
+
+func (b *Bank) GetMeta() (*BankMeta, error) {
+	m := BankMeta{}
+	if len(b.Meta.RawMessage) > 0 {
+		err := json.Unmarshal(b.Meta.RawMessage, &m)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return &m, nil
+}
+
+func (b *Bank) CommitMeta(m *BankMeta) error {
+	converted, err := json.Marshal(m)
+	if err != nil {
+		return err
+	}
+	b.Meta = postgres.Jsonb{RawMessage: converted}
+	return nil
 }
 
 type Client struct {

@@ -37,14 +37,3 @@ func (b *brankLayer) PublishMessageIntoKafka(req core.MessageRequest) core.Brank
 	}
 
 }
-
-func (l *linkLayer) LinkAccount(req core.LinkAccountRequest) core.BrankResponse {
-	return core.BrankResponse{
-		Error: false,
-		Code:  http.StatusOK,
-		Meta: core.BrankMeta{
-			Data:    nil,
-			Message: "client created successfully",
-		},
-	}
-}

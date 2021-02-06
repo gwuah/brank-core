@@ -35,9 +35,9 @@ func NewRouter(engine *gin.Engine, eStore mq.MQ, kvStore *redis.Client, repo rep
 }
 
 func (r *router) RegisterRoutes() {
-	RegisterLinkRoutes(r.engine, r.services)
-	RegisterClientRoutes(r.engine, r.services)
-	RegisterClientApplicationRoutes(r.engine, r.services)
 	RegisterBrankRoutes(r.engine, r.services)
-	RegisterTransactionsRoutes(r.engine, r.services)
+	RegisterLinkRoutes(r.engine.Group("/links"), r.services)
+	RegisterClientRoutes(r.engine.Group("/clients"), r.services)
+	RegisterClientApplicationRoutes(r.engine.Group("/applications"), r.services)
+	RegisterTransactionsRoutes(r.engine.Group("/transactions"), r.services)
 }

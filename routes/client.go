@@ -8,9 +8,9 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func RegisterClientRoutes(e *gin.Engine, s services.Services) {
+func RegisterClientRoutes(e *gin.RouterGroup, s services.Services) {
 
-	e.POST("/clients", func(c *gin.Context) {
+	e.POST("", func(c *gin.Context) {
 		var req core.CreateClientRequest
 		if err := c.ShouldBindJSON(&req); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{

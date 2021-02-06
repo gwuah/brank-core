@@ -8,8 +8,8 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func RegisterTransactionsRoutes(e *gin.Engine, s services.Services) {
-	e.GET("/transactions/:accountId", func(c *gin.Context) {
+func RegisterTransactionsRoutes(e *gin.RouterGroup, s services.Services) {
+	e.GET("/:accountId", func(c *gin.Context) {
 		page := "1"
 		if c.Query("page") != "" {
 			page = c.Query("page")

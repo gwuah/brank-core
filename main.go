@@ -1,6 +1,8 @@
 package main
 
 import (
+	"brank/integrations"
+
 	"brank/core"
 	"brank/core/models"
 	"brank/core/mq"
@@ -46,6 +48,8 @@ func main() {
 	cache := storage.NewRedis(c)
 	r := repository.NewRepo(pg)
 
+	integrations := integrations.NewBankIntegrations()
+
 	mq, err := mq.NewMQ(c)
 	if err != nil {
 		log.Fatal("failed to initialize messaging queue. err", err)
@@ -62,7 +66,7 @@ func main() {
 	)
 	go workers.Start()
 
-	s := services.NewService(r, c, mq)
+	s := services.NewService(r, c, mq, *integrations)
 	server := core.NewHTTPServer(c)
 	router := routes.NewRouter(server.Engine, mq, cache, r, q, c, s)
 

@@ -2,23 +2,27 @@ package services
 
 import (
 	"brank/core"
+	"brank/core/models"
+	"brank/core/utils"
+	"brank/integrations"
 	"brank/repository"
 	"errors"
-	"log"
 	"net/http"
 
 	"gorm.io/gorm"
 )
 
 type linkLayer struct {
-	repo   repository.Repo
-	config *core.Config
+	repo         repository.Repo
+	config       *core.Config
+	integrations integrations.Integrations
 }
 
-func newLinkLayer(r repository.Repo, c *core.Config) *linkLayer {
+func newLinkLayer(r repository.Repo, c *core.Config, i integrations.Integrations) *linkLayer {
 	return &linkLayer{
-		repo:   r,
-		config: c,
+		repo:         r,
+		config:       c,
+		integrations: i,
 	}
 }
 
@@ -26,36 +30,29 @@ func (l *linkLayer) ExchageContractCode(req core.ExchangeContractCode) core.Bran
 	link, err := l.repo.Link.FindByCode(req.Code)
 
 	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return core.BrankResponse{
-			Error: true,
-			Code:  http.StatusUnauthorized,
-			Meta: core.BrankMeta{
-				Data:    nil,
-				Message: "unauthorized request",
-			},
-		}
+		return utils.Error(nil, utils.String("un-authorized"), http.StatusInternalServerError)
 	}
 
 	if err != nil {
-		log.Println("link-FindByCode failed. err", err)
-		return core.BrankResponse{
-			Error: true,
-			Code:  http.StatusBadRequest,
-			Meta: core.BrankMeta{
-				Data:    nil,
-				Message: "account already exists. Wanna login?",
-			},
-		}
+		return utils.Error(nil, utils.String("account already exists. Wanna login?"), http.StatusBadRequest)
 	}
 
-	return core.BrankResponse{
-		Error: false,
-		Code:  http.StatusOK,
-		Meta: core.BrankMeta{
-			Data: map[string]interface{}{
-				"link": link,
-			},
-			Message: "exchange was successful",
-		},
+	return utils.Success(&map[string]interface{}{
+		"link": link,
+	}, utils.String("exchange successful"))
+}
+
+func (l *linkLayer) LinkAccount(req core.LinkAccountRequest) core.BrankResponse {
+	bank, err := l.repo.Bank.FindById(req.BankID)
+	if err != nil {
+		return utils.Error(nil, nil, http.StatusInternalServerError)
 	}
+
+	if bank.Code == models.FidelityBank {
+
+	}
+
+	return utils.Success(&map[string]interface{}{
+		"bank": bank,
+	}, utils.String("client created successfully"))
 }

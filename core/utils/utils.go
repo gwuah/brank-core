@@ -4,6 +4,8 @@ import (
 	crypto_rand "crypto/rand"
 	"encoding/binary"
 	"fmt"
+	"log"
+	"net/http"
 
 	"brank/core"
 	"math/rand"
@@ -32,6 +34,17 @@ func Bool(b bool) *bool {
 	return &temp
 }
 
+func String(v string) *string {
+	return &v
+}
+
+func StringValue(v *string) string {
+	if v != nil {
+		return *v
+	}
+	return ""
+}
+
 func GenerateTopic(topic string) string {
 	return fmt.Sprintf("%s%s", core.Get("CLOUDKARAFKA_TOPIC_PREFIX", ""), topic)
 }
@@ -53,4 +66,43 @@ func StringWithCharset(prefix string, length int) string {
 		b[i] = charset[seededRand.Intn(len(charset))]
 	}
 	return fmt.Sprintf("%s%s", prefix, string(b))
+}
+
+func Error(err error, m *string, code int) core.BrankResponse {
+	log.Println(err)
+
+	var message string
+	if m == nil {
+		message = "failure"
+	} else {
+		message = StringValue(m)
+	}
+
+	return core.BrankResponse{
+		Error: true,
+		Code:  code,
+		Meta: core.BrankMeta{
+			Data:    nil,
+			Message: message,
+		},
+	}
+}
+
+func Success(data *map[string]interface{}, m *string) core.BrankResponse {
+
+	var message string
+	if m == nil {
+		message = "success"
+	} else {
+		message = StringValue(m)
+	}
+
+	return core.BrankResponse{
+		Error: false,
+		Code:  http.StatusOK,
+		Meta: core.BrankMeta{
+			Data:    data,
+			Message: message,
+		},
+	}
 }

@@ -20,7 +20,7 @@ type CreateAppRequest struct {
 }
 
 type LinkAccountRequest struct {
-	BankID    string `json:"bank_id"`
+	BankID    int    `json:"bank_id"`
 	PublicKey string `json:"public_key"`
 	Username  string `json:"username"`
 	Password  string `json:"password"`

@@ -9,6 +9,12 @@ import (
 	"gorm.io/gorm"
 )
 
+var (
+	FidelityBank         = "fb"
+	StandardChateredBank = "scb"
+	FirstNationalBank    = "fnb"
+)
+
 var QUE_JOBS_TABLE = `
 CREATE TABLE IF NOT EXISTS que_jobs (
 	priority    smallint    NOT NULL DEFAULT 100,
@@ -26,41 +32,94 @@ CREATE TABLE IF NOT EXISTS que_jobs (
 COMMENT ON TABLE que_jobs IS '3';
 `
 
-func SeedBanks(db *gorm.DB) {
+func SeedBanks(db *gorm.DB) error {
 	banks := []Bank{
 		{
-			Name:            "Standard Chartered",
-			Url:             "https://retail.sc.com/afr/ibank/gh/foa/login.htm",
-			HasRestEndpoint: utils.Bool(false),
-			Code:            "scb",
+			Name:        "Standard Chartered",
+			Code:        StandardChateredBank,
+			RequiresOtp: utils.Bool(false),
 		},
 		{
-			Name:            "Fidelity Bank",
-			Url:             "https://retailibank.fidelitybank.com.gh/auth/login",
-			HasRestEndpoint: utils.Bool(true),
-			Code:            "fb",
+			Name:        "Fidelity Bank",
+			Code:        FidelityBank,
+			RequiresOtp: utils.Bool(true),
 		},
 		{
-			Name:            "First National Bank",
-			Url:             "https://www.firstnationalbank.com.gh/",
-			HasRestEndpoint: utils.Bool(false),
-			Code:            "fnb",
+			Name:        "First National Bank",
+			Code:        FirstNationalBank,
+			RequiresOtp: utils.Bool(false),
 		},
+	}
+
+	meta, err := banks[1].GetMeta()
+	if err != nil {
+		log.Println("failed to get meta", err)
+		return err
+	}
+
+	meta.FormConfiguration = LinkConfiguration{
+		Initial: []FormConfig{
+			{
+				ID:          1,
+				Label:       "Phone Number",
+				Type:        "text",
+				Required:    true,
+				Placeholder: "0205428811",
+			},
+			{
+				ID:          2,
+				Label:       "Pin",
+				Type:        "text",
+				Required:    true,
+				Placeholder: "******",
+			},
+			{
+				ID:       3,
+				Type:     "button",
+				Required: false,
+				Value:    "Link Account",
+			},
+		},
+		Otp: []FormConfig{
+			{
+				ID:          1,
+				Label:       "Otp",
+				Type:        "text",
+				Required:    true,
+				Placeholder: "****",
+			},
+			{
+				ID:       2,
+				Type:     "button",
+				Required: false,
+				Value:    "Complete Process",
+			},
+		},
+	}
+
+	if err := banks[1].CommitMeta(meta); err != nil {
+		log.Println("failed to commit config meta")
+		return err
+
 	}
 
 	for i := 0; i < len(banks); i++ {
 		bank := banks[i]
-		if err := db.Model(Bank{}).Where("name=?", bank.Name).First(&bank).Error; err != nil {
+		if err := db.Model(Bank{}).Where("code=?", bank.Code).First(&bank).Error; err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
-				db.Create(&bank)
-			} else {
-				log.Println("err is nil", err)
+				if err := db.Create(&bank).Error; err != nil {
+					return err
+				}
+				continue
 			}
+			return err
 		}
 	}
+
+	return nil
 }
 
-func SeedClient(db *gorm.DB) {
+func SeedClient(db *gorm.DB) error {
 	clients := []Client{
 		{
 			FirstName:   "Mister",
@@ -75,16 +134,19 @@ func SeedClient(db *gorm.DB) {
 		client := clients[i]
 		if err := db.Model(Client{}).Where("email=?", client.Email).First(&client).Error; err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
-				db.Create(&client)
-			} else {
-				log.Println("err is nil", err)
+				if err := db.Create(&client).Error; err != nil {
+					return err
+				}
+				continue
 			}
-
+			return err
 		}
 	}
+
+	return nil
 }
 
-func SeedApp(db *gorm.DB) {
+func SeedApp(db *gorm.DB) error {
 	apps := []App{
 		{
 			Name:        "Float",
@@ -97,26 +159,61 @@ func SeedApp(db *gorm.DB) {
 	}
 
 	for i := 0; i < len(apps); i++ {
-		db.Create(&apps[i])
+		app := apps[i]
+
+		if err := db.Model(App{}).Where("public_key=?", app.PublicKey).First(&app).Error; err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				if err := db.Create(&app).Error; err != nil {
+					return err
+				}
+				continue
+			}
+
+			return err
+
+		}
 	}
+
+	return nil
 }
 
-func RunSeeds(db *gorm.DB) {
-
-	SeedBanks(db)
-	SeedClient(db)
-	SeedApp(db)
-
-	db.Create(&Link{
+func SeedLink(db *gorm.DB) error {
+	var links []Link
+	if err := db.Model(Link{}).Find(&links).Limit(1).Error; err != nil {
+		return err
+	}
+	if len(links) > 0 {
+		return nil
+	}
+	return db.Create(&Link{
 		Code:     auth.GenerateExchangeCode(),
 		BankID:   1,
 		AppID:    1,
 		Username: "banku",
 		Password: "stew",
-	})
+	}).Error
+}
+
+func RunSeeds(db *gorm.DB) {
+
+	if err := SeedBanks(db); err != nil {
+		log.Println("failed to seed banks")
+	}
+
+	if err := SeedClient(db); err != nil {
+		log.Println("failed to seed clients")
+	}
+
+	if err := SeedApp(db); err != nil {
+		log.Println("failed to seed apps")
+	}
+
+	if err := SeedLink(db); err != nil {
+		log.Println("failed to seed links")
+	}
 
 	if err := db.Exec(QUE_JOBS_TABLE).Error; err != nil {
-		log.Println("EXEC FAILED")
+		log.Println("failed to exec queue jobs table ")
 	}
 
 }
