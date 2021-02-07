@@ -16,8 +16,8 @@ func newClientLayer(db *gorm.DB) *clientLayer {
 	}
 }
 
-func (r *clientLayer) Create(client *models.Client) error {
-	if err := r.db.Create(client).Error; err != nil {
+func (cl *clientLayer) Create(client *models.Client) error {
+	if err := cl.db.Create(client).Error; err != nil {
 		return err
 	}
 	return nil

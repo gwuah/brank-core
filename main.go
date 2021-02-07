@@ -48,7 +48,7 @@ func main() {
 	cache := storage.NewRedis(c)
 	r := repository.NewRepo(pg)
 
-	integrations := integrations.NewBankIntegrations()
+	i := integrations.NewBankIntegrations()
 
 	mq, err := mq.NewMQ(c)
 	if err != nil {
@@ -61,12 +61,12 @@ func main() {
 	}
 	workers := q.RegisterJobs(
 		[]queue.JobWorker{
-			que_workers.NewFidelityWorker(integrations),
+			que_workers.NewFidelityWorker(i, r),
 		},
 	)
 	go workers.Start()
 
-	s := services.NewService(r, c, mq, cache, q, *integrations)
+	s := services.NewService(r, c, mq, cache, q, *i)
 	server := core.NewHTTPServer(c)
 	router := routes.NewRouter(server.Engine, mq, cache, r, q, c, s)
 

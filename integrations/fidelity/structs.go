@@ -30,8 +30,8 @@ type User struct {
 }
 
 type Balance struct {
-	Id      int    `json:"id"`
-	Balance string `json:"balance"`
+	Id      int     `json:"id"`
+	Balance float64 `json:"balance"`
 }
 
 type HTTPResponse struct {

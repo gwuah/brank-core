@@ -36,13 +36,14 @@ type Model struct {
 
 type Account struct {
 	Model
-	Name             string        `json:"name"`
-	Balance          int64         `json:"balance"`
-	AvailableBalance int64         `json:"available_balance"`
-	Transactions     []Transaction `json:"transactions"`
-	LinkID           int           `json:"link_id"`
-	Link             Link          `json:"link,omitempty"`
-	Deleted          *bool         `json:"deleted"`
+	ExternalID       int     `json:"external_id"`
+	Name             string  `json:"name"`
+	AccountNumber    string  `json:"account_number"`
+	Balance          float64 `json:"balance"`
+	Currency         string  `json:"currency"`
+	AvailableBalance int64   `json:"available_balance,omitempty"`
+	LinkID           int     `json:"link_id"`
+	CustomerID       int     `json:"customer_id"`
 }
 
 type App struct {
@@ -84,7 +85,10 @@ type Client struct {
 
 type Customer struct {
 	Model
-	Hash string `json:"hash"`
+	Name        string `json:"name"`
+	PhoneNumber string `json:"phone"`
+	Hash        string `json:"hash"`
+	BankID      int    `json:"bank_id"`
 }
 
 type Inquiry struct {

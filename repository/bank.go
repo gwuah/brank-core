@@ -16,17 +16,17 @@ func newBankLayer(db *gorm.DB) *bankLayer {
 	}
 }
 
-func (r *bankLayer) FindById(id int) (*models.Bank, error) {
+func (b *bankLayer) FindById(id int) (*models.Bank, error) {
 	bank := models.Bank{Model: models.Model{ID: id}}
-	if err := r.db.Find(&bank).Error; err != nil {
+	if err := b.db.Find(&bank).Error; err != nil {
 		return &bank, err
 	}
 	return &bank, nil
 }
 
-func (r *bankLayer) All() (*[]models.Bank, error) {
+func (b *bankLayer) All() (*[]models.Bank, error) {
 	var banks []models.Bank
-	if err := r.db.Debug().Find(&banks).Error; err != nil {
+	if err := b.db.Debug().Find(&banks).Error; err != nil {
 		return &banks, err
 	}
 	return &banks, nil

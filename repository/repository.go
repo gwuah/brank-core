@@ -8,6 +8,8 @@ type Repo struct {
 	ClientApplication *clientApplicationLayer
 	Link              *linkLayer
 	Bank              *bankLayer
+	Customer          *customerLayer
+	Account           *accountLayer
 }
 
 func NewRepo(db *gorm.DB) Repo {
@@ -17,5 +19,7 @@ func NewRepo(db *gorm.DB) Repo {
 		ClientApplication: newClientApplicationLayer(db),
 		Link:              newLinkLayer(db),
 		Bank:              newBankLayer(db),
+		Customer:          newCustomerLayer(db),
+		Account:           newAccountLayer(db),
 	}
 }
