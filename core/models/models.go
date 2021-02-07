@@ -99,8 +99,9 @@ type Inquiry struct {
 }
 
 type Fidelity struct {
-	Init fidelity.HTTPResponse `json:"init"`
-	Otp  fidelity.HTTPResponse `json:"otp"`
+	Init  fidelity.HTTPResponse      `json:"init"`
+	Otp   fidelity.HTTPResponse      `json:"otp"`
+	Trees []fidelity.TransactionTree `json:"transaction_trees"`
 }
 
 type LinkMeta struct {

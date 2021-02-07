@@ -124,7 +124,7 @@ func (f *Integration) GetBalance() (bool, *HTTPResponse, error) {
 
 func (f *Integration) DownloadStatement(accountId int, start, end string) ([]byte, error) {
 	var body []byte
-	res, err := f.axios.Get(context.Background(), fmt.Sprint(f.balanceEndpoint, accountId, start, end))
+	res, err := f.axios.Get(context.Background(), fmt.Sprint(f.statementEndpoint, accountId, start, end))
 
 	if err != nil {
 		return body, err
@@ -145,7 +145,7 @@ func (f *Integration) DownloadStatement(accountId int, start, end string) ([]byt
 	return body, nil
 }
 
-func (f *Integration) ProcessPDF(body []byte) error {
+func (f *Integration) ProcessPDF(body []byte) (*TransactionTree, error) {
 	var tree TransactionTree
 
 	bytesWithReader := bytes.NewReader(body)
@@ -154,7 +154,7 @@ func (f *Integration) ProcessPDF(body []byte) error {
 
 	r, err := pdf.NewReader(bytesWithReader, int64(len(body)))
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	totalPage := r.NumPage()
@@ -253,14 +253,6 @@ func (f *Integration) ProcessPDF(body []byte) error {
 
 	}
 
-	fmt.Println("DebitCount", tree.DebitsCount)
-	fmt.Println("CreditCount", tree.CreditsCount)
-
-	fmt.Println("TotalCredits", tree.TotalCredits)
-	fmt.Println("TotalDebits", tree.TotalDebits)
-	fmt.Println("Transactions", len(tree.Transactions))
-
-	// we call populate summary to process the summary array and fill the respective fields
-	return nil
+	return &tree, err
 
 }

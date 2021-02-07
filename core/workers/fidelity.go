@@ -4,6 +4,7 @@ import (
 	"brank/core/models"
 	"brank/core/queue"
 	"brank/integrations"
+	"brank/integrations/fidelity"
 	"brank/repository"
 	"encoding/json"
 	"errors"
@@ -102,7 +103,30 @@ func (f *Fidelity) Worker() que.WorkFunc {
 			}
 		}
 
-		// pull transactions and seed them
+		// pull transactions for each account and store it
+		for _, account := range accounts {
+			response, err := f.i.Fidelity.DownloadStatement(account.ExternalID, fidelity.Get1YearFromToday(), fidelity.GetTodaysDate())
+			if err != nil {
+				return fmt.Errorf("fidelity_worker: failed to get download statement. err:%v", err)
+			}
+
+			tree, err := f.i.Fidelity.ProcessPDF(response)
+			if err != nil {
+				return fmt.Errorf("fidelity_worker: failed to get process statement. err:%v", err)
+			}
+
+			tree.PopulateSummary()
+			meta.Fidelity.Trees = append(meta.Fidelity.Trees, *tree)
+		}
+
+		if err := link.CommitMeta(meta); err != nil {
+			return fmt.Errorf("fidelity_worker: failed to commit link meta. err:%v", err)
+		}
+
+		if err := f.r.Link.Update(link); err != nil {
+			return fmt.Errorf("fidelity_worker: failed to update link. err:%v", err)
+		}
+
 		return errors.New("if we're here, then i'm pretty sure the bearer token has expired")
 	}
 }

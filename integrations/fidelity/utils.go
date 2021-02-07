@@ -5,7 +5,16 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 )
+
+func GetTodaysDate() string {
+	return strings.Split(time.Now().String(), " ")[0]
+}
+
+func Get1YearFromToday() string {
+	return strings.Split(time.Now().AddDate(-1, 0, 0).String(), " ")[0]
+}
 
 func CreateTransaction(values [][]string) Transaction {
 	main := values[0]
