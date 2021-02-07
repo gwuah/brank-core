@@ -18,6 +18,15 @@ var (
 	Success Status    = "success"
 )
 
+type LinkConfiguration struct {
+	Otp     []FormConfig `json:"otp"`
+	Initial []FormConfig `json:"initial"`
+}
+
+type BankMeta struct {
+	FormConfiguration LinkConfiguration `json:"link_configuration"`
+}
+
 type Model struct {
 	ID        int        `gorm:"primary_key" json:"id"`
 	CreatedAt time.Time  `json:"created_at"`
@@ -55,41 +64,12 @@ type FormConfig struct {
 	Value       string `json:"value,omitempty"`
 }
 
-type LinkConfiguration struct {
-	Otp     []FormConfig `json:"otp"`
-	Initial []FormConfig `json:"initial"`
-}
-
-type BankMeta struct {
-	FormConfiguration LinkConfiguration `json:"link_configuration"`
-}
-
 type Bank struct {
 	Model
 	Code        string         `json:"code"`
 	Name        string         `json:"name"`
 	RequiresOtp *bool          `json:"requires_otp"`
 	Meta        postgres.Jsonb `json:"meta"`
-}
-
-func (b *Bank) GetMeta() (*BankMeta, error) {
-	m := BankMeta{}
-	if len(b.Meta.RawMessage) > 0 {
-		err := json.Unmarshal(b.Meta.RawMessage, &m)
-		if err != nil {
-			return nil, err
-		}
-	}
-	return &m, nil
-}
-
-func (b *Bank) CommitMeta(m *BankMeta) error {
-	converted, err := json.Marshal(m)
-	if err != nil {
-		return err
-	}
-	b.Meta = postgres.Jsonb{RawMessage: converted}
-	return nil
 }
 
 type Client struct {
@@ -133,6 +113,26 @@ type Link struct {
 	Username string         `json:"username"`
 	Password string         `json:"password"`
 	Meta     postgres.Jsonb `json:"meta"`
+}
+
+func (b *Bank) GetMeta() (*BankMeta, error) {
+	m := BankMeta{}
+	if len(b.Meta.RawMessage) > 0 {
+		err := json.Unmarshal(b.Meta.RawMessage, &m)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return &m, nil
+}
+
+func (b *Bank) CommitMeta(m *BankMeta) error {
+	converted, err := json.Marshal(m)
+	if err != nil {
+		return err
+	}
+	b.Meta = postgres.Jsonb{RawMessage: converted}
+	return nil
 }
 
 func (b *Link) GetMeta() (*LinkMeta, error) {

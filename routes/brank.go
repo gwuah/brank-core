@@ -10,7 +10,7 @@ import (
 
 func RegisterBrankRoutes(e *gin.Engine, s services.Services) {
 
-	e.GET("/financial-institutions", func(c *gin.Context) {
+	e.GET("/institutions", func(c *gin.Context) {
 
 		response := s.Brank.GetFinancialInstitutions()
 

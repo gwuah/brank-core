@@ -165,7 +165,7 @@ func (l *linkLayer) VerifyOTP(req core.VerifyOTPRequest) core.BrankResponse {
 
 			return utils.Success(&map[string]interface{}{
 				"code": link.Code,
-			}, utils.String("otp verification successful"))
+			}, utils.String("link complete"))
 		}
 
 		return utils.Error(nil, nil, http.StatusUnauthorized)

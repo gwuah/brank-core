@@ -14,15 +14,15 @@ type Integration struct {
 type Account struct {
 	AccountNumber string `json:"accountNumber"`
 	Currency      string `json:"currency"`
-	Id            string `json:"id"`
+	Id            int    `json:"id"`
 	Name          string `json:"name"`
-	Type          string `json:"type"`
+	Type          int    `json:"type"`
 }
 
 type User struct {
 	UserUid        string    `json:"userUid"`
-	UserType       string    `json:"userType"`
-	Status         string    `json:"status"`
+	UserType       int       `json:"userType"`
+	Status         int       `json:"status"`
 	Name           string    `json:"name"`
 	MobileNumber   string    `json:"mobileNumber"`
 	ActiveChannels []int     `json:"activeChannels"`

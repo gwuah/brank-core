@@ -5,7 +5,6 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"strings"
@@ -54,7 +53,7 @@ func (f *Integration) VerifyLogin(username, password string) (bool, *HTTPRespons
 	} else if res.StatusCode == 200 {
 		var response HTTPResponse
 		if err := json.Unmarshal(body, &response); err != nil {
-			return false, nil, errors.New("failed to unmarshal fidelity reponse")
+			return false, nil, fmt.Errorf("failed to unmarshal fidelity reponse. err: %v", err)
 		}
 		return true, &response, nil
 	}
@@ -86,7 +85,7 @@ func (f *Integration) VerifyOtp(otp string) (bool, *HTTPResponse, error) {
 	} else if res.StatusCode == 200 {
 		var response HTTPResponse
 		if err := json.Unmarshal(body, &response); err != nil {
-			return false, nil, errors.New("failed to unmarshal fidelity reponse")
+			return false, nil, fmt.Errorf("failed to unmarshal fidelity reponse. err: %v", err)
 		}
 		return true, &response, nil
 	}
@@ -115,7 +114,7 @@ func (f *Integration) GetBalance() (bool, *HTTPResponse, error) {
 		var response HTTPResponse
 		err := json.Unmarshal(body, &response)
 		if err != nil {
-			return false, nil, errors.New("failed to unmarshal fidelity reponse")
+			return false, nil, fmt.Errorf("failed to unmarshal fidelity reponse. err: %v", err)
 		}
 		return true, &response, nil
 	}
