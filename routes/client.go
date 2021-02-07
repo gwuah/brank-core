@@ -32,4 +32,26 @@ func RegisterClientRoutes(e *gin.RouterGroup, s services.Services) {
 
 	})
 
+	e.POST("/login", func(c *gin.Context) {
+		var req core.LoginClientRequest
+		if err := c.ShouldBindJSON(&req); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"status": "bad request",
+			})
+			return
+		}
+
+		response := s.Clients.Login(req)
+
+		if response.Error {
+			c.JSON(response.Code, gin.H{
+				"message": response.Meta.Message,
+			})
+			return
+		}
+
+		c.JSON(response.Code, response.Meta)
+
+	})
+
 }

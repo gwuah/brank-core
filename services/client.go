@@ -6,7 +6,6 @@ import (
 	"brank/core/utils"
 	"brank/repository"
 	"errors"
-	"log"
 	"net/http"
 
 	"gorm.io/gorm"
@@ -36,7 +35,6 @@ func (c *clientLayer) CreateClient(req core.CreateClientRequest) core.BrankRespo
 
 	passwordHash, err := auth.Hash(req.Password)
 	if err != nil {
-		log.Println("failed to hash password", err)
 		return utils.Error(err, nil, http.StatusInternalServerError)
 	}
 
@@ -44,10 +42,10 @@ func (c *clientLayer) CreateClient(req core.CreateClientRequest) core.BrankRespo
 	client.LastName = req.LastName
 	client.CompanyName = req.CompanyName
 	client.Password = passwordHash
+	client.Verified = utils.Bool(false)
 
 	if err = c.repo.Clients.Create(client); err != nil {
 		return utils.Error(err, nil, http.StatusInternalServerError)
-
 	}
 
 	token, err := auth.GenerateClientAuthToken(client.ID, c.config.JWT_SIGNING_KEY)
@@ -59,5 +57,27 @@ func (c *clientLayer) CreateClient(req core.CreateClientRequest) core.BrankRespo
 		"token":  token,
 		"client": client,
 	}, utils.String("client created successfully"))
+
+}
+
+func (c *clientLayer) Login(req core.LoginClientRequest) core.BrankResponse {
+	client, err := c.repo.Clients.FindByEmail(req.Email)
+	if err != nil {
+		return utils.Error(err, utils.String("email/password invalid"), http.StatusUnauthorized)
+	}
+
+	status := auth.VerifyHash(client.Password, req.Password)
+	if !status {
+		return utils.Error(err, utils.String("email/password invalid"), http.StatusUnauthorized)
+	}
+
+	token, err := auth.GenerateClientAuthToken(client.ID, c.config.JWT_SIGNING_KEY)
+	if err != nil {
+		return utils.Error(err, nil, http.StatusInternalServerError)
+	}
+
+	return utils.Success(&map[string]interface{}{
+		"token": token,
+	}, utils.String("client login successful"))
 
 }

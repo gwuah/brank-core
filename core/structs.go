@@ -12,6 +12,11 @@ type CreateClientRequest struct {
 	CompanyName string `json:"company_name"`
 }
 
+type LoginClientRequest struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
+
 type CreateAppRequest struct {
 	Name        string `json:"name"`
 	Logo        string `json:"logo"`

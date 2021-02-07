@@ -22,8 +22,7 @@ func Hash(value string) (string, error) {
 }
 
 func VerifyHash(hash, value string) bool {
-	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(value))
-	return err == nil
+	return bcrypt.CompareHashAndPassword([]byte(hash), []byte(value)) == nil
 }
 
 func NewPublicKey(name string) string {

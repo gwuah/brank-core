@@ -77,7 +77,7 @@ type Client struct {
 	FirstName   string `json:"first_name"`
 	LastName    string `json:"last_name"`
 	Email       string `json:"email"`
-	Password    string `json:"password"`
+	Password    string `json:"-"`
 	CompanyName string `json:"company_name"`
 	Verified    *bool  `json:"verified" gorm:"default=false"`
 }
