@@ -20,6 +20,6 @@ func (a *accountLayer) BulkInsert(records *[]models.Account) error {
 	return a.db.Create(records).Error
 }
 
-func (a *accountLayer) Update(records *models.Account) error {
-	return a.db.Updates(records).Error
+func (a *accountLayer) UpdateWhere(record *models.Account, query string, params ...interface{}) error {
+	return a.db.Debug().Where(query, params...).Updates(record).Error
 }

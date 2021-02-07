@@ -60,6 +60,7 @@ func (f *Fidelity) Worker() que.WorkFunc {
 			return fmt.Errorf("fidelity_worker: get link meta failed. err:%v", err)
 		}
 
+		// TODO: find by phone number before creating
 		// create customer
 		c := models.Customer{
 			Name:        meta.Fidelity.Otp.User.Name,
@@ -70,10 +71,12 @@ func (f *Fidelity) Worker() que.WorkFunc {
 			return fmt.Errorf("fidelity_worker: failed to create customer. err:%v", err)
 		}
 
+		// TODO: find before create, gyimim
 		// create accounts
 		var accounts []models.Account
 		for _, account := range meta.Fidelity.Otp.User.Accounts {
 			accounts = append(accounts, models.Account{
+				LinkID:        link.ID,
 				AccountNumber: account.AccountNumber,
 				Currency:      account.Currency,
 				ExternalID:    account.Id,
@@ -94,29 +97,35 @@ func (f *Fidelity) Worker() que.WorkFunc {
 
 		if status {
 			for _, object := range response.Balances {
-				if err := f.r.Account.Update(&models.Account{
-					ExternalID: object.Id,
-					Balance:    object.Balance,
-				}); err != nil {
+				if err := f.r.Account.UpdateWhere(&models.Account{
+					Balance: object.Balance,
+				}, "external_id=?", object.Id); err != nil {
 					return fmt.Errorf("fidelity_worker: failed to update balance. err:%v", err)
 				}
 			}
+		} else {
+			return errors.New("if we're here, then i'm pretty sure the bearer token has expired")
 		}
 
 		// pull transactions for each account and store it
 		for _, account := range accounts {
-			response, err := f.i.Fidelity.DownloadStatement(account.ExternalID, fidelity.Get1YearFromToday(), fidelity.GetTodaysDate())
+			status, response, err := f.i.Fidelity.DownloadStatement(account.ExternalID, fidelity.Get1YearFromToday(), fidelity.GetTodaysDate())
 			if err != nil {
-				return fmt.Errorf("fidelity_worker: failed to get download statement. err:%v", err)
+				return fmt.Errorf("fidelity_worker: failed to download statement. err:%v", err)
 			}
 
-			tree, err := f.i.Fidelity.ProcessPDF(response)
-			if err != nil {
-				return fmt.Errorf("fidelity_worker: failed to get process statement. err:%v", err)
+			if status {
+				tree, err := f.i.Fidelity.ProcessPDF(response)
+				if err != nil {
+					return fmt.Errorf("fidelity_worker: failed to get process statement. err:%v", err)
+				}
+
+				tree.PopulateSummary()
+				meta.Fidelity.Trees = append(meta.Fidelity.Trees, *tree)
+			} else {
+				return errors.New("if we're here, then i'm pretty sure the bearer token has expired")
 			}
 
-			tree.PopulateSummary()
-			meta.Fidelity.Trees = append(meta.Fidelity.Trees, *tree)
 		}
 
 		if err := link.CommitMeta(meta); err != nil {
@@ -127,6 +136,6 @@ func (f *Fidelity) Worker() que.WorkFunc {
 			return fmt.Errorf("fidelity_worker: failed to update link. err:%v", err)
 		}
 
-		return errors.New("if we're here, then i'm pretty sure the bearer token has expired")
+		return nil
 	}
 }

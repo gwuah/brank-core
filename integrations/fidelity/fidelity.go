@@ -122,12 +122,12 @@ func (f *Integration) GetBalance() (bool, *HTTPResponse, error) {
 	return false, nil, nil
 }
 
-func (f *Integration) DownloadStatement(accountId int, start, end string) ([]byte, error) {
+func (f *Integration) DownloadStatement(accountId int64, start, end string) (bool, []byte, error) {
 	var body []byte
-	res, err := f.axios.Get(context.Background(), fmt.Sprint(f.statementEndpoint, accountId, start, end))
+	res, err := f.axios.Get(context.Background(), fmt.Sprintf(f.statementEndpoint, accountId, start, end))
 
 	if err != nil {
-		return body, err
+		return false, body, err
 	}
 
 	defer res.Body.Close()
@@ -135,14 +135,14 @@ func (f *Integration) DownloadStatement(accountId int, start, end string) ([]byt
 	body, err = ioutil.ReadAll(res.Body)
 
 	if err != nil {
-		return body, err
+		return false, body, err
 	}
 
 	if res.StatusCode == 401 || res.StatusCode == 403 {
-		return body, nil
+		return false, body, nil
 	}
 
-	return body, nil
+	return true, body, nil
 }
 
 func (f *Integration) ProcessPDF(body []byte) (*TransactionTree, error) {

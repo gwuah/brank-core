@@ -14,7 +14,7 @@ type Integration struct {
 type Account struct {
 	AccountNumber string `json:"accountNumber"`
 	Currency      string `json:"currency"`
-	Id            int    `json:"id"`
+	Id            int64  `json:"id"`
 	Name          string `json:"name"`
 	Type          int    `json:"type"`
 }
@@ -30,7 +30,7 @@ type User struct {
 }
 
 type Balance struct {
-	Id      int     `json:"id"`
+	Id      int64   `json:"id"`
 	Balance float64 `json:"balance"`
 }
 
@@ -52,7 +52,7 @@ type HTTPResponse struct {
 	// balance endpoint
 	Balances              []Balance `json:"balances"`
 	TrackingId            string    `json:"trackingId"`
-	TransactionStatusCode string    `json:"transactionStatusCode"`
+	TransactionStatusCode int       `json:"transactionStatusCode"`
 }
 
 type Transaction struct {

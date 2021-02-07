@@ -36,7 +36,7 @@ type Model struct {
 
 type Account struct {
 	Model
-	ExternalID       int     `json:"external_id"`
+	ExternalID       int64   `json:"external_id"`
 	Name             string  `json:"name"`
 	AccountNumber    string  `json:"account_number"`
 	Balance          float64 `json:"balance"`
