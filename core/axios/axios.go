@@ -35,6 +35,9 @@ func (a *Axios) Post(ctx context.Context, path string, body map[string]string) (
 		req.Header.Add("Authorization", "Bearer "+a.bearerToken)
 	}
 
+	req.Header.Set("Accept", "*/*")
+	req.Header.Set("Content-Type", "application/json")
+
 	return a.httpClient.Do(req)
 }
 
@@ -48,5 +51,7 @@ func (a *Axios) Get(ctx context.Context, path string) (*http.Response, error) {
 		req.Header.Add("Authorization", "Bearer "+a.bearerToken)
 	}
 
+	req.Header.Set("Accept", "*/*")
+	req.Header.Set("Content-Type", "application/json")
 	return a.httpClient.Do(req)
 }

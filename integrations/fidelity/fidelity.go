@@ -31,7 +31,7 @@ func (f *Integration) SetBearerToken(token string) {
 func (f *Integration) VerifyLogin(username, password string) (bool, *HTTPResponse, error) {
 	reqBody := map[string]string{
 		"phoneNumber":        username,
-		"password":           password,
+		"pin":                password,
 		"secondFactorMethod": "SMS-OTP",
 	}
 

@@ -92,7 +92,7 @@ func NewConfig() *Config {
 		PG_SSLMODE:                Get("PG_SSLMODE", "disable"),
 		REDIS_ADDRESS:             Get("REDIS_ADDRESS", "localhost:6379"),
 		REDIS_PASSWORD:            Get("REDIS_PASSWORD", ""),
-		REDIS_DB:                  GetInt("REDIS_DB", 1),
+		REDIS_DB:                  GetInt("REDIS_DB", 0),
 		REDIS_URL:                 Get("REDIS_URL", ""),
 		DATABASE_URL:              Get("DATABASE_URL", ""),
 		PORT:                      GetInt("PORT", 5454),

@@ -12,7 +12,7 @@ type Integrations struct {
 }
 
 func NewBankIntegrations() *Integrations {
-	httpClient := http.Client{Timeout: 30 * time.Second}
+	httpClient := http.Client{Timeout: time.Minute}
 	return &Integrations{
 		Fidelity: fidelity.New(axios.New(httpClient)),
 	}

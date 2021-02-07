@@ -67,7 +67,7 @@ func (l *linkLayer) LinkAccount(req core.LinkAccountRequest) core.BrankResponse 
 		if status {
 			app, err := l.repo.ClientApplication.FindByPublicKey(req.PublicKey)
 			if err != nil {
-				return utils.Error(err, nil, http.StatusInternalServerError)
+				return utils.Error(err, utils.String("public_token is invalid"), http.StatusUnauthorized)
 			}
 
 			link := models.Link{
@@ -107,7 +107,7 @@ func (l *linkLayer) LinkAccount(req core.LinkAccountRequest) core.BrankResponse 
 			}, utils.String("link sucessful"))
 		}
 
-		return utils.Error(nil, nil, http.StatusUnauthorized)
+		return utils.Error(nil, nil, http.StatusInternalServerError)
 	}
 
 	return utils.Error(nil, utils.String("no integration available for bank"), http.StatusBadRequest)

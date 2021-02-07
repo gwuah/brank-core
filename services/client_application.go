@@ -87,7 +87,6 @@ func (c *clientApplicationLayer) GetByPublicKey(key string) core.BrankResponse {
 	if err != nil {
 		return utils.Error(err, utils.String("not found"), http.StatusNotFound)
 	}
-
 	return utils.Success(&map[string]interface{}{
 		"app": app,
 	}, nil)
