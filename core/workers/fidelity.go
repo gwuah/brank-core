@@ -11,6 +11,7 @@ import (
 	"fmt"
 
 	"github.com/bgentry/que-go"
+	"gorm.io/gorm"
 )
 
 const (
@@ -60,32 +61,41 @@ func (f *Fidelity) Worker() que.WorkFunc {
 			return fmt.Errorf("fidelity_worker: get link meta failed. err:%v", err)
 		}
 
-		// TODO: find by phone number before creating
 		// create customer
-		c := models.Customer{
-			Name:        meta.Fidelity.Otp.User.Name,
-			PhoneNumber: meta.Fidelity.Otp.User.MobileNumber,
-			BankID:      link.BankID,
-		}
-		if err := f.r.Customer.Create(&c); err != nil {
-			return fmt.Errorf("fidelity_worker: failed to create customer. err:%v", err)
+		c, err := f.r.Customer.FindByPhone(meta.Fidelity.Otp.User.MobileNumber)
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			c.Name = meta.Fidelity.Otp.User.Name
+			c.PhoneNumber = meta.Fidelity.Otp.User.MobileNumber
+			c.BankID = link.BankID
+			if err := f.r.Customer.Create(c); err != nil {
+				return fmt.Errorf("fidelity_worker: failed to create customer. err:%v", err)
+			}
 		}
 
-		// TODO: find before create, gyimim
 		// create accounts
 		var accounts []models.Account
-		for _, account := range meta.Fidelity.Otp.User.Accounts {
-			accounts = append(accounts, models.Account{
-				LinkID:        link.ID,
-				AccountNumber: account.AccountNumber,
-				Currency:      account.Currency,
-				ExternalID:    account.Id,
-				Name:          account.Name,
-				CustomerID:    c.ID,
-			})
+		for _, acc := range meta.Fidelity.Otp.User.Accounts {
+			var tmpAccount models.Account
+			err := f.r.Account.FindWhere(&tmpAccount, "account_number=? AND external_id=?", acc.AccountNumber, acc.Id)
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				accounts = append(accounts, models.Account{
+					LinkID:        link.ID,
+					AccountNumber: acc.AccountNumber,
+					Currency:      acc.Currency,
+					ExternalID:    acc.Id,
+					Name:          acc.Name,
+					CustomerID:    c.ID,
+				})
+			}
+
+			if err != nil {
+				return fmt.Errorf("fidelity_worker: failed to check for account. err:%v", err)
+			}
 		}
-		if err := f.r.Account.BulkInsert(&accounts); err != nil {
-			return fmt.Errorf("fidelity_worker: failed to create accounts. err:%v", err)
+		if len(accounts) > 0 {
+			if err := f.r.Account.BulkInsert(&accounts); err != nil {
+				return fmt.Errorf("fidelity_worker: failed to create accounts. err:%v", err)
+			}
 		}
 
 		// get balance
@@ -97,9 +107,11 @@ func (f *Fidelity) Worker() que.WorkFunc {
 
 		if status {
 			for _, object := range response.Balances {
-				if err := f.r.Account.UpdateWhere(&models.Account{
+				err := f.r.Account.UpdateWhere(&models.Account{
 					Balance: object.Balance,
-				}, "external_id=?", object.Id); err != nil {
+				}, "external_id=?", object.Id)
+
+				if err != nil {
 					return fmt.Errorf("fidelity_worker: failed to update balance. err:%v", err)
 				}
 			}
@@ -108,6 +120,7 @@ func (f *Fidelity) Worker() que.WorkFunc {
 		}
 
 		// pull transactions for each account and store it
+		f.i.Fidelity.SetBearerToken(meta.Fidelity.Otp.Token)
 		for _, account := range accounts {
 			status, response, err := f.i.Fidelity.DownloadStatement(account.ExternalID, fidelity.Get1YearFromToday(), fidelity.GetTodaysDate())
 			if err != nil {

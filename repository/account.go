@@ -23,3 +23,7 @@ func (a *accountLayer) BulkInsert(records *[]models.Account) error {
 func (a *accountLayer) UpdateWhere(record *models.Account, query string, params ...interface{}) error {
 	return a.db.Debug().Where(query, params...).Updates(record).Error
 }
+
+func (a *accountLayer) FindWhere(record *models.Account, query string, params ...interface{}) error {
+	return a.db.Debug().Where(query, params...).Find(record).Error
+}
