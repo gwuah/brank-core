@@ -27,7 +27,7 @@ type LinkAccountRequest struct {
 }
 
 type VerifyOTPRequest struct {
-	SessionID int    `json:"session_id"`
+	SessionID string `json:"session_id"`
 	Otp       string `json:"otp"`
 }
 

@@ -67,7 +67,7 @@ func (l *linkLayer) LinkAccount(req core.LinkAccountRequest) core.BrankResponse 
 		if status {
 			app, err := l.repo.ClientApplication.FindByPublicKey(req.PublicKey)
 			if err != nil {
-				return utils.Error(err, utils.String("public_token is invalid"), http.StatusUnauthorized)
+				return utils.Error(err, utils.String("public_key is invalid"), http.StatusUnauthorized)
 			}
 
 			link := models.Link{
@@ -116,6 +116,10 @@ func (l *linkLayer) LinkAccount(req core.LinkAccountRequest) core.BrankResponse 
 
 func (l *linkLayer) VerifyOTP(req core.VerifyOTPRequest) core.BrankResponse {
 	val, err := l.cache.Get(fmt.Sprint(req.SessionID)).Result()
+	if err == redis.Nil {
+		return utils.Error(err, utils.String("session_id has either expired or is invalid"), http.StatusBadRequest)
+	}
+
 	if err != nil {
 		return utils.Error(err, nil, http.StatusInternalServerError)
 	}
@@ -144,13 +148,17 @@ func (l *linkLayer) VerifyOTP(req core.VerifyOTPRequest) core.BrankResponse {
 			return utils.Error(err, nil, http.StatusInternalServerError)
 		}
 
-		meta.Fidelity.Otp = *response
-
-		if err := link.CommitMeta(meta); err != nil {
-			return utils.Error(err, nil, http.StatusInternalServerError)
-		}
-
 		if status {
+			meta.Fidelity.Otp = *response
+
+			if err := link.CommitMeta(meta); err != nil {
+				return utils.Error(err, nil, http.StatusInternalServerError)
+			}
+
+			if err := l.repo.Link.Update(link); err != nil {
+				return utils.Error(err, nil, http.StatusInternalServerError)
+			}
+
 			if err := l.q.QueueJob(worker.FidelityJob, worker.CreateFidelityJob(link.ID)); err != nil {
 				return utils.Error(err, nil, http.StatusInternalServerError)
 			}

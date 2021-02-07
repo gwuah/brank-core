@@ -29,7 +29,7 @@ func (l *linkLayer) Create(link *models.Link) error {
 }
 
 func (l *linkLayer) Update(link *models.Link) error {
-	return l.db.Save(&link).Error
+	return l.db.Debug().Updates(link).Error
 }
 
 func (l *linkLayer) FindById(id int) (*models.Link, error) {

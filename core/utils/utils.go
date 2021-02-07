@@ -74,7 +74,9 @@ func StringWithCharset(prefix string, length int) string {
 }
 
 func Error(err error, m *string, code int) core.BrankResponse {
-	log.Println(err)
+	if err != nil {
+		log.Println(err)
+	}
 
 	var message string
 	if m == nil {
