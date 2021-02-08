@@ -12,7 +12,7 @@ type accountLayer struct {
 
 func newAccountLayer(db *gorm.DB) *accountLayer {
 	return &accountLayer{
-		db: db,
+		db: db.Debug(),
 	}
 }
 
@@ -21,9 +21,9 @@ func (a *accountLayer) BulkInsert(records *[]models.Account) error {
 }
 
 func (a *accountLayer) UpdateWhere(record *models.Account, query string, params ...interface{}) error {
-	return a.db.Debug().Where(query, params...).Updates(record).Error
+	return a.db.Where(query, params...).Updates(record).Error
 }
 
 func (a *accountLayer) FindWhere(record *models.Account, query string, params ...interface{}) error {
-	return a.db.Debug().Where(query, params...).Find(record).Error
+	return a.db.Where(query, params...).First(record).Error
 }

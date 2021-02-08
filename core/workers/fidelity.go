@@ -76,20 +76,19 @@ func (f *Fidelity) Worker() que.WorkFunc {
 		var accounts []models.Account
 		for _, acc := range meta.Fidelity.Otp.User.Accounts {
 			var tmpAccount models.Account
-			err := f.r.Account.FindWhere(&tmpAccount, "account_number=? AND external_id=?", acc.AccountNumber, acc.Id)
-			if errors.Is(err, gorm.ErrRecordNotFound) {
-				accounts = append(accounts, models.Account{
-					LinkID:        link.ID,
-					AccountNumber: acc.AccountNumber,
-					Currency:      acc.Currency,
-					ExternalID:    acc.Id,
-					Name:          acc.Name,
-					CustomerID:    c.ID,
-				})
-			}
-
-			if err != nil {
-				return fmt.Errorf("fidelity_worker: failed to check for account. err:%v", err)
+			if err := f.r.Account.FindWhere(&tmpAccount, "account_number=? AND external_id=?", acc.AccountNumber, acc.Id); err != nil {
+				if errors.Is(err, gorm.ErrRecordNotFound) {
+					accounts = append(accounts, models.Account{
+						LinkID:        link.ID,
+						AccountNumber: acc.AccountNumber,
+						Currency:      acc.Currency,
+						ExternalID:    acc.Id,
+						Name:          acc.Name,
+						CustomerID:    c.ID,
+					})
+				} else {
+					return fmt.Errorf("fidelity_worker: failed to check for account. err:%v", err)
+				}
 			}
 		}
 		if len(accounts) > 0 {
@@ -121,6 +120,14 @@ func (f *Fidelity) Worker() que.WorkFunc {
 
 		// pull transactions for each account and store it
 		f.i.Fidelity.SetBearerToken(meta.Fidelity.Otp.Token)
+		// a proper implementation is to load all accounts a
+		// you can put a field that shows the last time a sync was done.
+		// if it's less than a day, we ignore
+		// we only need account.ExternalId, no need to load everything
+
+		// the thing with the current approach is, if the creating account works
+		// and the the code below doesn't work. when the task re-tries the job,
+		// the accounts wont be seeded
 		for _, account := range accounts {
 			status, response, err := f.i.Fidelity.DownloadStatement(account.ExternalID, fidelity.Get1YearFromToday(), fidelity.GetTodaysDate())
 			if err != nil {
@@ -149,6 +156,7 @@ func (f *Fidelity) Worker() que.WorkFunc {
 			return fmt.Errorf("fidelity_worker: failed to update link. err:%v", err)
 		}
 
-		return nil
+		// return nil
+		return errors.New("lkeep")
 	}
 }

@@ -12,14 +12,14 @@ type customerLayer struct {
 
 func newCustomerLayer(db *gorm.DB) *customerLayer {
 	return &customerLayer{
-		db: db,
+		db: db.Debug(),
 	}
 }
 
 func (cl *customerLayer) FindByPhone(phone string) (*models.Customer, error) {
 	customer := models.Customer{PhoneNumber: phone}
-	if err := cl.db.Find(&customer).Error; err != nil {
-		return nil, err
+	if err := cl.db.First(&customer).Error; err != nil {
+		return &customer, err
 	}
 	return &customer, nil
 }
