@@ -9,6 +9,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
 
 	"github.com/bgentry/que-go"
 	"gorm.io/gorm"
@@ -108,7 +109,7 @@ func (f *Fidelity) Worker() que.WorkFunc {
 			for _, object := range response.Balances {
 				err := f.r.Account.UpdateWhere(&models.Account{
 					Balance: object.Balance,
-				}, "external_id=?", object.Id)
+				}, "external_id=? AND link_id=?", object.Id, link.ID)
 
 				if err != nil {
 					return fmt.Errorf("fidelity_worker: failed to update balance. err:%v", err)
@@ -128,8 +129,15 @@ func (f *Fidelity) Worker() que.WorkFunc {
 		// the thing with the current approach is, if the creating account works
 		// and the the code below doesn't work. when the task re-tries the job,
 		// the accounts wont be seeded
-		for _, account := range accounts {
-			status, response, err := f.i.Fidelity.DownloadStatement(account.ExternalID, fidelity.Get1YearFromToday(), fidelity.GetTodaysDate())
+		var accs = &accounts
+		if len(accounts) == 0 {
+			accs, err = f.r.Account.Find("link_id=?", link.ID)
+			if err != nil {
+				return fmt.Errorf("fidelity_worker: failed to find link accounts. err:%v", err)
+			}
+		}
+		for _, account := range *accs {
+			status, response, err := f.i.Fidelity.DownloadStatement(account.ExternalID, fidelity.Get3YearsFromToday(), fidelity.GetTodaysDate())
 			if err != nil {
 				return fmt.Errorf("fidelity_worker: failed to download statement. err:%v", err)
 			}
@@ -142,6 +150,7 @@ func (f *Fidelity) Worker() que.WorkFunc {
 
 				tree.PopulateSummary()
 				meta.Fidelity.Trees = append(meta.Fidelity.Trees, *tree)
+				log.Println("STATEMENT FOR ACCOUNT ->", account.ExternalID, "PARSED")
 			} else {
 				return errors.New("if we're here, then i'm pretty sure the bearer token has expired")
 			}

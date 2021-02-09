@@ -17,8 +17,8 @@ func newCustomerLayer(db *gorm.DB) *customerLayer {
 }
 
 func (cl *customerLayer) FindByPhone(phone string) (*models.Customer, error) {
-	customer := models.Customer{PhoneNumber: phone}
-	if err := cl.db.First(&customer).Error; err != nil {
+	var customer models.Customer
+	if err := cl.db.Where("phone_number=?", phone).First(&customer).Error; err != nil {
 		return &customer, err
 	}
 	return &customer, nil

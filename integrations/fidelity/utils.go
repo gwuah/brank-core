@@ -16,6 +16,10 @@ func Get1YearFromToday() string {
 	return strings.Split(time.Now().AddDate(-1, 0, 0).String(), " ")[0]
 }
 
+func Get3YearsFromToday() string {
+	return strings.Split(time.Now().AddDate(-3, 0, 0).String(), " ")[0]
+}
+
 func CreateTransaction(values [][]string) Transaction {
 	main := values[0]
 	trans := Transaction{

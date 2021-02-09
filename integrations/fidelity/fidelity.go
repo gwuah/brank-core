@@ -227,9 +227,12 @@ func (f *Integration) ProcessPDF(body []byte) (*TransactionTree, error) {
 
 			// if we start sliding our window and we see a date, it means we have encountered
 			// a new row, and as such we exit and go back to "i"
-			if ok, _ := isValidDate(jRow[0]); ok {
-				i = j - 1
-				break
+
+			if len(jRow[0]) == 10 {
+				if ok, _ := isValidDate(jRow[0]); ok {
+					i = j - 1
+					break
+				}
 			}
 
 			// if we see the string below, it means we've completed parsing our pdf
