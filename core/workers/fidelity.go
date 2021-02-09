@@ -9,7 +9,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log"
 
 	"github.com/bgentry/que-go"
 	"gorm.io/gorm"
@@ -149,8 +148,8 @@ func (f *Fidelity) Worker() que.WorkFunc {
 				}
 
 				tree.PopulateSummary()
+				tree.ExternalID = account.ExternalID
 				meta.Fidelity.Trees = append(meta.Fidelity.Trees, *tree)
-				log.Println("STATEMENT FOR ACCOUNT ->", account.ExternalID, "PARSED")
 			} else {
 				return errors.New("if we're here, then i'm pretty sure the bearer token has expired")
 			}
