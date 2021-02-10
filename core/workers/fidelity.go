@@ -171,7 +171,6 @@ func (f *Fidelity) Worker() que.WorkFunc {
 			return fmt.Errorf("fidelity_worker: failed to queue processing job. err:%v", err)
 		}
 
-		// return nil
-		return errors.New("lkeep")
+		return nil
 	}
 }
