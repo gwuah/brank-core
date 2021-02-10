@@ -1,5 +1,9 @@
 package core
 
+type FidelityTransactionsProcessorQeueJob struct {
+	LinkID int `json:"link_id"`
+}
+
 type MessageRequest struct {
 	Message string `json:"message"`
 }

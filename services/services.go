@@ -23,7 +23,7 @@ func NewService(r repository.Repo, c *core.Config, mq mq.MQ, kv *redis.Client, q
 		Clients:           newClientLayer(r, c),
 		ClientApplication: newClientApplicationLayer(r, c),
 		Links:             newLinkLayer(r, c, kv, q, i),
-		Brank:             newBrankLayer(r, c, mq),
+		Brank:             newBrankLayer(r, c, mq, q),
 		Transactions:      newTransactionLayer(r, c),
 	}
 }

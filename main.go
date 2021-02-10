@@ -28,7 +28,6 @@ func main() {
 
 	err = storage.RunMigrations(pg,
 		&models.Transaction{},
-		&models.Inquiry{},
 		&models.Client{},
 		&models.Bank{},
 		&models.Account{},
@@ -61,7 +60,8 @@ func main() {
 	}
 	workers := q.RegisterJobs(
 		[]queue.JobWorker{
-			que_workers.NewFidelityWorker(i, r),
+			que_workers.NewFidelityWorker(i, r, q),
+			que_workers.NewFidelityTransactionsWorker(r),
 		},
 	)
 	go workers.Start()

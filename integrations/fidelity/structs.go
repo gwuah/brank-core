@@ -71,7 +71,7 @@ type TransactionTree struct {
 	CreditsCount int64         `json:"credits_count"`
 	Transactions []Transaction `json:"transactions"`
 	Summary      []string      `json:"summary"`
-	ExternalID   int64         `json:"external_id"`
+	AccountID    int           `json:"account_id"`
 }
 
 func (tt *TransactionTree) PopulateSummary() {

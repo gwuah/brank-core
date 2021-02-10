@@ -17,6 +17,10 @@ func newTransactionLayer(db *gorm.DB) *transactionLayer {
 	}
 }
 
+func (t *transactionLayer) BulkInsertWithCount(records *[]models.Transaction, count int) error {
+	return t.db.CreateInBatches(records, count).Error
+}
+
 func (t *transactionLayer) FindById(id int) (*models.Transaction, error) {
 	var transaction models.Transaction
 	if err := t.db.First(&transaction, id).Error; err != nil {

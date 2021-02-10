@@ -6,6 +6,7 @@ import (
 	"brank/integrations"
 	"brank/integrations/fidelity"
 	"brank/repository"
+
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -21,6 +22,7 @@ const (
 type Fidelity struct {
 	i *integrations.Integrations
 	r repository.Repo
+	q *queue.Que
 }
 
 type FidelityJobPayload struct {
@@ -33,10 +35,11 @@ func CreateFidelityJob(linkID int) *FidelityJobPayload {
 	}
 }
 
-func NewFidelityWorker(i *integrations.Integrations, r repository.Repo) *Fidelity {
+func NewFidelityWorker(i *integrations.Integrations, r repository.Repo, q *queue.Que) *Fidelity {
 	return &Fidelity{
 		i: i,
 		r: r,
+		q: q,
 	}
 }
 
@@ -148,7 +151,7 @@ func (f *Fidelity) Worker() que.WorkFunc {
 				}
 
 				tree.PopulateSummary()
-				tree.ExternalID = account.ExternalID
+				tree.AccountID = account.ID
 				meta.Fidelity.Trees = append(meta.Fidelity.Trees, *tree)
 			} else {
 				return errors.New("if we're here, then i'm pretty sure the bearer token has expired")
@@ -162,6 +165,10 @@ func (f *Fidelity) Worker() que.WorkFunc {
 
 		if err := f.r.Link.Update(link); err != nil {
 			return fmt.Errorf("fidelity_worker: failed to update link. err:%v", err)
+		}
+
+		if err := f.q.QueueJob(FidelityTransactionsProcessingJob, CreateFidelityTransactionsJob(link.ID)); err != nil {
+			return fmt.Errorf("fidelity_worker: failed to queue processing job. err:%v", err)
 		}
 
 		// return nil

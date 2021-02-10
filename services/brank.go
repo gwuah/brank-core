@@ -3,8 +3,11 @@ package services
 import (
 	"brank/core"
 	"brank/core/mq"
+	"brank/core/queue"
 	"brank/core/utils"
+	worker "brank/core/workers"
 	"brank/repository"
+
 	"net/http"
 )
 
@@ -12,13 +15,15 @@ type brankLayer struct {
 	repo   repository.Repo
 	config *core.Config
 	mq     mq.MQ
+	q      *queue.Que
 }
 
-func newBrankLayer(r repository.Repo, c *core.Config, mq mq.MQ) *brankLayer {
+func newBrankLayer(r repository.Repo, c *core.Config, mq mq.MQ, q *queue.Que) *brankLayer {
 	return &brankLayer{
 		repo:   r,
 		config: c,
 		mq:     mq,
+		q:      q,
 	}
 }
 
@@ -35,6 +40,16 @@ func (b *brankLayer) PublishMessageIntoKafka(req core.MessageRequest) core.Brank
 			Message: "message received",
 		},
 	}
+
+}
+
+func (b *brankLayer) CreateFidelityTransactionProcessorJob(req core.FidelityTransactionsProcessorQeueJob) core.BrankResponse {
+
+	if err := b.q.QueueJob(worker.FidelityTransactionsProcessingJob, worker.CreateFidelityTransactionsJob(req.LinkID)); err != nil {
+		return utils.Error(err, nil, http.StatusInternalServerError)
+	}
+
+	return utils.Success(nil, nil)
 
 }
 

@@ -51,7 +51,7 @@ func ConvertToFloat(v string) float64 {
 	value, err := strconv.ParseFloat(strings.Join(res, ""), 64)
 
 	if err != nil {
-		fmt.Println("err occured whiles converting string -> int. err:", err)
+		fmt.Println("err occured whiles converting string -> float. err:", err)
 		return 0
 	}
 

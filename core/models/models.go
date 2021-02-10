@@ -91,13 +91,6 @@ type Customer struct {
 	BankID      int    `json:"bank_id"`
 }
 
-type Inquiry struct {
-	Model
-	Raw    postgres.Jsonb `json:"raw"`
-	LinkID int            `json:"link_id"`
-	Link   Link           `json:"link,omitempty"`
-}
-
 type Fidelity struct {
 	Init  fidelity.HTTPResponse      `json:"init"`
 	Otp   fidelity.HTTPResponse      `json:"otp"`
@@ -163,14 +156,11 @@ func (b *Link) CommitMeta(m *LinkMeta) error {
 type Transaction struct {
 	Model
 	Direction   Direction `json:"direction"`
-	Amount      int       `json:"amount"`
+	Amount      int64     `json:"amount"`
 	Description string    `json:"description"`
 	Date        time.Time `json:"transaction_date"`
 	Status      Status    `json:"status"`
-	InquiryID   int       `json:"inquiry_id"`
-	Inquiry     *Inquiry  `json:"inquiry,omitempty"`
 	AccountID   int       `json:"account_id"`
-	Account     *Account  `json:"account,omitempty"`
 }
 
 // type QueJob struct {

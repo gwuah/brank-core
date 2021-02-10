@@ -46,4 +46,27 @@ func RegisterBrankRoutes(e *gin.Engine, s services.Services) {
 
 		c.JSON(response.Code, response.Meta)
 	})
+
+	e.POST("/queue-fidelity-transactions-processor", func(c *gin.Context) {
+
+		var req core.FidelityTransactionsProcessorQeueJob
+
+		if err := c.ShouldBindJSON(&req); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"status": "bad request",
+			})
+			return
+		}
+
+		response := s.Brank.CreateFidelityTransactionProcessorJob(req)
+
+		if response.Error {
+			c.JSON(response.Code, gin.H{
+				"message": response.Meta.Message,
+			})
+			return
+		}
+
+		c.JSON(response.Code, response.Meta)
+	})
 }
