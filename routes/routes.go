@@ -22,7 +22,7 @@ type router struct {
 	services services.Services
 }
 
-func NewRouter(engine *gin.Engine, eStore mq.MQ, kvStore *redis.Client, repo repository.Repo, queue *queue.Que, config *core.Config, services services.Services) *router {
+func New(engine *gin.Engine, eStore mq.MQ, kvStore *redis.Client, repo repository.Repo, queue *queue.Que, config *core.Config, services services.Services) *router {
 	return &router{
 		engine:   engine,
 		eStore:   eStore,

@@ -12,7 +12,7 @@ type Repo struct {
 	Account           *accountLayer
 }
 
-func NewRepo(db *gorm.DB) Repo {
+func New(db *gorm.DB) Repo {
 	return Repo{
 		Transactions:      newTransactionLayer(db),
 		Clients:           newClientLayer(db),

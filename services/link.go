@@ -2,7 +2,6 @@ package services
 
 import (
 	"brank/core"
-	"brank/core/auth"
 	"brank/core/models"
 	"brank/core/queue"
 	"brank/core/utils"
@@ -71,7 +70,7 @@ func (l *linkLayer) LinkAccount(req core.LinkAccountRequest) core.BrankResponse 
 			}
 
 			link := models.Link{
-				Code:     auth.GenerateExchangeCode(),
+				Code:     utils.GenerateExchangeCode(),
 				BankID:   bank.ID,
 				AppID:    app.ID,
 				Username: req.Username,

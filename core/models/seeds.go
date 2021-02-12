@@ -1,7 +1,6 @@
 package models
 
 import (
-	"brank/core/auth"
 	"brank/core/utils"
 	"errors"
 	"log"
@@ -186,7 +185,7 @@ func SeedLink(db *gorm.DB) error {
 		return nil
 	}
 	return db.Create(&Link{
-		Code:     auth.GenerateExchangeCode(),
+		Code:     utils.GenerateExchangeCode(),
 		BankID:   1,
 		AppID:    1,
 		Username: "banku",

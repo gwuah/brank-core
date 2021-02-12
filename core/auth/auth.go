@@ -1,9 +1,6 @@
 package auth
 
 import (
-	"brank/core/utils"
-	"fmt"
-	"strings"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
@@ -23,14 +20,6 @@ func Hash(value string) (string, error) {
 
 func VerifyHash(hash, value string) bool {
 	return bcrypt.CompareHashAndPassword([]byte(hash), []byte(value)) == nil
-}
-
-func NewPublicKey(name string) string {
-	return utils.StringWithCharset(fmt.Sprintf("%s-", strings.ToUpper(name)), 12)
-}
-
-func GenerateExchangeCode() string {
-	return utils.StringWithCharset("", 8)
 }
 
 func GenerateClientAuthToken(ClientID int, key string) (string, error) {

@@ -18,7 +18,7 @@ type Services struct {
 	Transactions      *transactionsLayer
 }
 
-func NewService(r repository.Repo, c *core.Config, mq mq.MQ, kv *redis.Client, q *queue.Que, i integrations.Integrations) Services {
+func New(r repository.Repo, c *core.Config, mq mq.MQ, kv *redis.Client, q *queue.Que, i integrations.Integrations) Services {
 	return Services{
 		Clients:           newClientLayer(r, c),
 		ClientApplication: newClientApplicationLayer(r, c),

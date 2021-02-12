@@ -29,7 +29,7 @@ func (c *clientApplicationLayer) CreateApp(req core.CreateAppRequest) core.Brank
 		Logo:        req.Logo,
 		CallbackUrl: req.CallbackUrl,
 		ClientID:    req.ClientID,
-		PublicKey:   auth.NewPublicKey(strings.ToLower(req.Name)),
+		PublicKey:   utils.NewPublicKey(strings.ToLower(req.Name)),
 	}
 	err := c.repo.ClientApplication.Create(&app)
 	if err != nil {
