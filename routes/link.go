@@ -14,7 +14,7 @@ func RegisterLinkRoutes(e *gin.RouterGroup, s services.Services) {
 		var req core.LinkAccountRequest
 		if err := c.ShouldBindJSON(&req); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{
-				"status": "bad request",
+				"message": "bad request",
 			})
 			return
 		}
@@ -36,7 +36,7 @@ func RegisterLinkRoutes(e *gin.RouterGroup, s services.Services) {
 		var req core.VerifyOTPRequest
 		if err := c.ShouldBindJSON(&req); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{
-				"status": "bad request",
+				"message": "bad request",
 			})
 			return
 		}
@@ -58,7 +58,7 @@ func RegisterLinkRoutes(e *gin.RouterGroup, s services.Services) {
 		var req core.ExchangeContractCode
 		if err := c.ShouldBindJSON(&req); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{
-				"status": "bad request",
+				"message": "bad request",
 			})
 			return
 		}

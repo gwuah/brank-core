@@ -1,13 +1,16 @@
 package auth
 
 import (
+	"brank/core"
+	"log"
 	"net/http"
 	"strings"
 
+	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 )
 
-func ExtractTokenFromAuthHeader(val string) (token string, ok bool) {
+func ExtractToken(val string) (token string, ok bool) {
 	authHeaderParts := strings.Split(val, " ")
 	if len(authHeaderParts) != 2 || !strings.EqualFold(authHeaderParts[0], "bearer") {
 		return "", false
@@ -29,16 +32,66 @@ func CORS() gin.HandlerFunc {
 	}
 }
 
-func AuthMiddleware() gin.HandlerFunc {
+func ExtractTokenFromAuthHeader(cfg *core.Config) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		token, ok := ExtractTokenFromAuthHeader(c.Request.Header.Get("Authorization"))
-		if !ok {
+		token, ok := ExtractToken(c.Request.Header.Get("Authorization"))
+		if ok {
+			c.Set("token", token)
+		}
+		c.Next()
+	}
+}
+
+func AuthorizeProductRequest(cfg *core.Config) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		token, exists := c.Get("token")
+		if !exists {
 			c.JSON(http.StatusUnauthorized, gin.H{
-				"status": "un-authorized",
+				"message": "unauthorized",
 			})
+			c.Abort()
 			return
 		}
-		c.Set("token", token)
-		c.Next()
+
+		tokenString, _ := token.(string)
+		claim := ExchangeClaim{}
+		_, err := jwt.ParseWithClaims(tokenString, &claim, func(token *jwt.Token) (interface{}, error) {
+			return cfg.JWT_SIGNING_KEY, nil
+		})
+		if err != nil {
+			log.Println("err processing claim:", err)
+			c.JSON(http.StatusUnauthorized, gin.H{
+				"message": "unauthorized",
+			})
+			c.Abort()
+			return
+		}
+	}
+}
+
+func AuthorizeClientRequest(cfg *core.Config) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		token, exists := c.Get("token")
+		if !exists {
+			c.JSON(http.StatusUnauthorized, gin.H{
+				"message": "unauthorized",
+			})
+			c.Abort()
+			return
+		}
+
+		tokenString, _ := token.(string)
+		claim := ClientClaim{}
+		_, err := jwt.ParseWithClaims(tokenString, &claim, func(token *jwt.Token) (interface{}, error) {
+			return cfg.JWT_SIGNING_KEY, nil
+		})
+		if err != nil {
+			log.Println("err processing claim:", err)
+			c.JSON(http.StatusUnauthorized, gin.H{
+				"message": "unauthorized",
+			})
+			c.Abort()
+			return
+		}
 	}
 }

@@ -48,7 +48,7 @@ func (c *clientLayer) CreateClient(req core.CreateClientRequest) core.BrankRespo
 		return utils.Error(err, nil, http.StatusInternalServerError)
 	}
 
-	token, err := auth.GenerateClientAuthToken(client.ID, c.config.JWT_SIGNING_KEY)
+	token, err := auth.GenerateClientAccessToken(client.ID, c.config.JWT_SIGNING_KEY)
 	if err != nil {
 		return utils.Error(err, nil, http.StatusInternalServerError)
 	}
@@ -71,7 +71,7 @@ func (c *clientLayer) Login(req core.LoginClientRequest) core.BrankResponse {
 		return utils.Error(err, utils.String("email/password invalid"), http.StatusUnauthorized)
 	}
 
-	token, err := auth.GenerateClientAuthToken(client.ID, c.config.JWT_SIGNING_KEY)
+	token, err := auth.GenerateClientAccessToken(client.ID, c.config.JWT_SIGNING_KEY)
 	if err != nil {
 		return utils.Error(err, nil, http.StatusInternalServerError)
 	}

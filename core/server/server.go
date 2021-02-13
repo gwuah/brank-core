@@ -20,9 +20,11 @@ type Server struct {
 func NewHTTPServer(cfg *core.Config) *Server {
 	engine := gin.Default()
 	engine.Use(auth.CORS())
+	engine.Use(auth.ExtractTokenFromAuthHeader(cfg))
+
 	engine.GET("/", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
-			"status": "OK",
+			"message": "OK",
 		})
 	})
 	return &Server{

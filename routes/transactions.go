@@ -9,7 +9,7 @@ import (
 )
 
 func RegisterTransactionsRoutes(e *gin.RouterGroup, s services.Services) {
-	e.GET("/:accountId", func(c *gin.Context) {
+	e.GET("", func(c *gin.Context) {
 		page := "1"
 		if c.Query("page") != "" {
 			page = c.Query("page")

@@ -14,7 +14,7 @@ func RegisterClientRoutes(e *gin.RouterGroup, s services.Services) {
 		var req core.CreateClientRequest
 		if err := c.ShouldBindJSON(&req); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{
-				"status": "bad request",
+				"message": "bad request",
 			})
 			return
 		}
@@ -36,7 +36,7 @@ func RegisterClientRoutes(e *gin.RouterGroup, s services.Services) {
 		var req core.LoginClientRequest
 		if err := c.ShouldBindJSON(&req); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{
-				"status": "bad request",
+				"message": "bad request",
 			})
 			return
 		}

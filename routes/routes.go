@@ -2,6 +2,7 @@ package routes
 
 import (
 	"brank/core"
+	"brank/core/auth"
 	"brank/core/mq"
 	"brank/services"
 
@@ -36,8 +37,12 @@ func New(engine *gin.Engine, eStore mq.MQ, kvStore *redis.Client, repo repositor
 
 func (r *router) RegisterRoutes() {
 	RegisterBrankRoutes(r.engine, r.services)
+
+	// Links
 	RegisterLinkRoutes(r.engine.Group("/links"), r.services)
 	RegisterClientRoutes(r.engine.Group("/clients"), r.services)
 	RegisterClientApplicationRoutes(r.engine.Group("/applications"), r.services)
-	RegisterTransactionsRoutes(r.engine.Group("/transactions"), r.services)
+
+	// Transactions
+	RegisterTransactionsRoutes(r.engine.Group("/transactions", auth.AuthorizeProductRequest(r.config)), r.services)
 }
