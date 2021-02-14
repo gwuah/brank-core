@@ -2,7 +2,6 @@ package auth
 
 import (
 	"brank/core"
-	"log"
 	"net/http"
 	"strings"
 
@@ -56,10 +55,9 @@ func AuthorizeProductRequest(cfg *core.Config) gin.HandlerFunc {
 		tokenString, _ := token.(string)
 		claim := ExchangeClaim{}
 		_, err := jwt.ParseWithClaims(tokenString, &claim, func(token *jwt.Token) (interface{}, error) {
-			return cfg.JWT_SIGNING_KEY, nil
+			return []byte(cfg.JWT_SIGNING_KEY), nil
 		})
 		if err != nil {
-			log.Println("err processing claim:", err)
 			c.JSON(http.StatusUnauthorized, gin.H{
 				"message": "unauthorized",
 			})
@@ -83,10 +81,9 @@ func AuthorizeClientRequest(cfg *core.Config) gin.HandlerFunc {
 		tokenString, _ := token.(string)
 		claim := ClientClaim{}
 		_, err := jwt.ParseWithClaims(tokenString, &claim, func(token *jwt.Token) (interface{}, error) {
-			return cfg.JWT_SIGNING_KEY, nil
+			return []byte(cfg.JWT_SIGNING_KEY), nil
 		})
 		if err != nil {
-			log.Println("err processing claim:", err)
 			c.JSON(http.StatusUnauthorized, gin.H{
 				"message": "unauthorized",
 			})

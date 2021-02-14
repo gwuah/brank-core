@@ -16,9 +16,10 @@ require (
 	github.com/ledongthuc/pdf v0.0.0-20200323191019-23c5852adbd2
 	github.com/onsi/ginkgo v1.14.2 // indirect
 	github.com/onsi/gomega v1.10.3 // indirect
+	github.com/pkg/errors v0.9.1 // indirect
 	github.com/rs/xid v1.2.1
 	golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9
 	gopkg.in/confluentinc/confluent-kafka-go.v1 v1.5.2
-	gorm.io/driver/postgres v1.0.5
-	gorm.io/gorm v1.20.7
+	gorm.io/driver/postgres v1.0.8
+	gorm.io/gorm v1.20.12
 )
