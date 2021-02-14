@@ -16,14 +16,6 @@ func newLinkLayer(db *gorm.DB) *linkLayer {
 	}
 }
 
-func (l *linkLayer) FindByCode(code string) (*models.Link, error) {
-	link := models.Link{Code: code}
-	if err := l.db.Where("code = ?", code).First(&link).Error; err != nil {
-		return &link, err
-	}
-	return &link, nil
-}
-
 func (l *linkLayer) Create(link *models.Link) error {
 	return l.db.Create(link).Error
 }

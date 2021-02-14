@@ -64,6 +64,7 @@ func main() {
 		[]queue.JobWorker{
 			que_workers.NewFidelityWorker(i, r, q),
 			que_workers.NewFidelityTransactionsWorker(r),
+			que_workers.NewWebhookWorker(r, q),
 		},
 	)
 	go workers.Start()

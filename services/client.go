@@ -77,7 +77,18 @@ func (c *clientLayer) Login(req core.LoginClientRequest) core.BrankResponse {
 	}
 
 	return utils.Success(&map[string]interface{}{
-		"token": token,
-	}, utils.String("client login successful"))
+		"token":  token,
+		"client": client,
+	}, nil)
 
+}
+
+func (c *clientLayer) Get(id int) core.BrankResponse {
+	client, err := c.repo.Clients.FindByID(id)
+	if err != nil {
+		return utils.Error(err, utils.String("not found"), http.StatusNotFound)
+	}
+	return utils.Success(&map[string]interface{}{
+		"client": client,
+	}, nil)
 }

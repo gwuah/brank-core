@@ -185,11 +185,23 @@ func SeedLink(db *gorm.DB) error {
 		return nil
 	}
 	return db.Create(&Link{
-		Code:     utils.GenerateExchangeCode(),
 		BankID:   1,
-		AppID:    1,
 		Username: "banku",
 		Password: "stew",
+	}).Error
+}
+
+func SeedAppLink(db *gorm.DB) error {
+	var appLink []AppLink
+	if err := db.Model(AppLink{}).Find(&appLink).Limit(1).Error; err != nil {
+		return err
+	}
+	if len(appLink) > 0 {
+		return nil
+	}
+	return db.Create(&AppLink{
+		Code:  utils.GenerateExchangeCode(),
+		AppID: 1,
 	}).Error
 }
 

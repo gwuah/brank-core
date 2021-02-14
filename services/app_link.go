@@ -2,6 +2,7 @@ package services
 
 import (
 	"brank/core"
+	"brank/core/auth"
 	"brank/core/models"
 	"brank/core/queue"
 	"brank/core/utils"
@@ -16,7 +17,7 @@ import (
 	"gorm.io/gorm"
 )
 
-type linkLayer struct {
+type appLinkLayer struct {
 	cache        *redis.Client
 	repo         repository.Repo
 	config       *core.Config
@@ -24,8 +25,8 @@ type linkLayer struct {
 	q            *queue.Que
 }
 
-func newLinkLayer(r repository.Repo, c *core.Config, kv *redis.Client, q *queue.Que, i integrations.Integrations) *linkLayer {
-	return &linkLayer{
+func newAppLinkLayer(r repository.Repo, c *core.Config, kv *redis.Client, q *queue.Que, i integrations.Integrations) *appLinkLayer {
+	return &appLinkLayer{
 		repo:         r,
 		config:       c,
 		integrations: i,
@@ -34,23 +35,35 @@ func newLinkLayer(r repository.Repo, c *core.Config, kv *redis.Client, q *queue.
 	}
 }
 
-func (l *linkLayer) ExchageContractCode(req core.ExchangeContractCode) core.BrankResponse {
-	link, err := l.repo.Link.FindByCode(req.Code)
+func (l *appLinkLayer) ExchageContractCode(req core.ExchangeContractCode) core.BrankResponse {
+	appLink, err := l.repo.AppLink.FindByCode(req.Code)
 
 	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return utils.Error(nil, utils.String("un-authorized"), http.StatusInternalServerError)
+		return utils.Error(nil, nil, http.StatusUnauthorized)
 	}
 
 	if err != nil {
-		return utils.Error(nil, utils.String("account already exists. Wanna login?"), http.StatusBadRequest)
+		return utils.Error(err, nil, http.StatusInternalServerError)
+	}
+
+	accessToken, err := auth.GenerateExchangeAccessToken(appLink.ID, l.config.JWT_SIGNING_KEY)
+	if err != nil {
+		return utils.Error(err, nil, http.StatusInternalServerError)
+	}
+
+	appLink.AccessToken = accessToken
+	appLink.State = models.Claimed
+
+	if err = l.repo.AppLink.Update(appLink); err != nil {
+		return utils.Error(err, nil, http.StatusInternalServerError)
 	}
 
 	return utils.Success(&map[string]interface{}{
-		"link": link,
-	}, utils.String("exchange successful"))
+		"access_token": accessToken,
+	}, nil)
 }
 
-func (l *linkLayer) LinkAccount(req core.LinkAccountRequest) core.BrankResponse {
+func (l *appLinkLayer) LinkAccount(req core.LinkAccountRequest) core.BrankResponse {
 	bank, err := l.repo.Bank.FindById(req.BankID)
 	if err != nil {
 		return utils.Error(err, nil, http.StatusInternalServerError)
@@ -70,9 +83,7 @@ func (l *linkLayer) LinkAccount(req core.LinkAccountRequest) core.BrankResponse 
 			}
 
 			link := models.Link{
-				Code:     utils.GenerateExchangeCode(),
 				BankID:   bank.ID,
-				AppID:    app.ID,
 				Username: req.Username,
 				Password: req.Password,
 			}
@@ -94,9 +105,20 @@ func (l *linkLayer) LinkAccount(req core.LinkAccountRequest) core.BrankResponse 
 				return utils.Error(err, nil, http.StatusInternalServerError)
 			}
 
+			appLink := models.AppLink{
+				AppID:  app.ID,
+				LinkID: link.ID,
+				State:  models.Unclaimed,
+				Code:   utils.GenerateExchangeCode(),
+			}
+
+			if err := l.repo.AppLink.Create(&appLink); err != nil {
+				return utils.Error(err, nil, http.StatusInternalServerError)
+			}
+
 			sessionId := utils.GenerateUUID()
 
-			if err := l.cache.Set(sessionId, link.ID, 0).Err(); err != nil {
+			if err := l.cache.Set(sessionId, appLink.ID, 0).Err(); err != nil {
 				return utils.Error(err, nil, http.StatusInternalServerError)
 			}
 
@@ -113,7 +135,7 @@ func (l *linkLayer) LinkAccount(req core.LinkAccountRequest) core.BrankResponse 
 
 }
 
-func (l *linkLayer) VerifyOTP(req core.VerifyOTPRequest) core.BrankResponse {
+func (l *appLinkLayer) VerifyOTP(req core.VerifyOTPRequest) core.BrankResponse {
 	val, err := l.cache.Get(fmt.Sprint(req.SessionID)).Result()
 	if err == redis.Nil {
 		return utils.Error(err, utils.String("session_id has either expired or is invalid"), http.StatusBadRequest)
@@ -123,7 +145,12 @@ func (l *linkLayer) VerifyOTP(req core.VerifyOTPRequest) core.BrankResponse {
 		return utils.Error(err, nil, http.StatusInternalServerError)
 	}
 
-	link, err := l.repo.Link.FindById(utils.ConvertToInt(val))
+	appLink, err := l.repo.AppLink.FindById(utils.ConvertToInt(val))
+	if err != nil {
+		return utils.Error(err, nil, http.StatusInternalServerError)
+	}
+
+	link, err := l.repo.Link.FindById(appLink.ID)
 	if err != nil {
 		return utils.Error(err, nil, http.StatusInternalServerError)
 	}
@@ -163,7 +190,7 @@ func (l *linkLayer) VerifyOTP(req core.VerifyOTPRequest) core.BrankResponse {
 			}
 
 			return utils.Success(&map[string]interface{}{
-				"code": link.Code,
+				"code": appLink.Code,
 			}, utils.String("link complete"))
 		}
 

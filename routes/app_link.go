@@ -8,7 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func RegisterLinkRoutes(e *gin.RouterGroup, s services.Services) {
+func RegisterAppLinkRoutes(e *gin.RouterGroup, s services.Services) {
 
 	e.POST("", func(c *gin.Context) {
 		var req core.LinkAccountRequest
@@ -19,7 +19,7 @@ func RegisterLinkRoutes(e *gin.RouterGroup, s services.Services) {
 			return
 		}
 
-		response := s.Links.LinkAccount(req)
+		response := s.AppLinks.LinkAccount(req)
 
 		if response.Error {
 			c.JSON(response.Code, gin.H{
@@ -41,7 +41,7 @@ func RegisterLinkRoutes(e *gin.RouterGroup, s services.Services) {
 			return
 		}
 
-		response := s.Links.VerifyOTP(req)
+		response := s.AppLinks.VerifyOTP(req)
 
 		if response.Error {
 			c.JSON(response.Code, gin.H{
@@ -63,7 +63,7 @@ func RegisterLinkRoutes(e *gin.RouterGroup, s services.Services) {
 			return
 		}
 
-		response := s.Links.ExchageContractCode(req)
+		response := s.AppLinks.ExchageContractCode(req)
 
 		if response.Error {
 			c.JSON(response.Code, gin.H{
