@@ -8,10 +8,17 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// func extractPaginationDataFromUrl(c *gin.Context) {
+// 	var (
+// 		offset = c.Query("offset")
+// 		limit  = c.Query("limit")
+// 	)
+// }
+
 func RegisterTransactionsRoutes(e *gin.RouterGroup, s services.Services) {
 	e.GET("", func(c *gin.Context) {
 		page := "1"
-		if c.Query("page") != "" {
+		if c.Query("offset") != "" {
 			page = c.Query("page")
 		}
 

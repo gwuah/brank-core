@@ -77,7 +77,7 @@ func (l *appLinkLayer) LinkAccount(req core.LinkAccountRequest) core.BrankRespon
 		}
 
 		if status {
-			app, err := l.repo.ClientApplication.FindByPublicKey(req.PublicKey)
+			app, err := l.repo.Application.FindByPublicKey(req.PublicKey)
 			if err != nil {
 				return utils.Error(err, utils.String("public_key is invalid"), http.StatusUnauthorized)
 			}

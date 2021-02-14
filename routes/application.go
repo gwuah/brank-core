@@ -8,7 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func RegisterClientApplicationRoutes(e *gin.RouterGroup, s services.Services) {
+func RegisterApplicationRoutes(e *gin.RouterGroup, s services.Services) {
 
 	e.POST("", func(c *gin.Context) {
 		var req core.CreateAppRequest
@@ -19,7 +19,7 @@ func RegisterClientApplicationRoutes(e *gin.RouterGroup, s services.Services) {
 			return
 		}
 
-		response := s.ClientApplication.CreateApp(req)
+		response := s.Application.CreateApp(req)
 
 		if response.Error {
 			c.JSON(response.Code, gin.H{
@@ -35,7 +35,7 @@ func RegisterClientApplicationRoutes(e *gin.RouterGroup, s services.Services) {
 	e.GET("/:public_key", func(c *gin.Context) {
 		publicKey := c.Param("public_key")
 
-		response := s.ClientApplication.GetByPublicKey(publicKey)
+		response := s.Application.GetByPublicKey(publicKey)
 
 		if response.Error {
 			c.JSON(response.Code, gin.H{

@@ -43,7 +43,8 @@ func (r *router) RegisterRoutes() {
 
 	RegisterClientRoutes(r.engine.Group("/clients"), r.services)
 
-	RegisterClientApplicationRoutes(r.engine.Group("/applications"), r.services)
+	// Apps
+	RegisterApplicationRoutes(r.engine.Group("/applications"), r.services)
 
 	// Transactions
 	RegisterTransactionsRoutes(r.engine.Group("/transactions", auth.AuthorizeProductRequest(r.config)), r.services)
