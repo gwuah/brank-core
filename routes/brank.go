@@ -30,7 +30,7 @@ func RegisterBrankRoutes(e *gin.Engine, s services.Services) {
 
 		if err := c.ShouldBindJSON(&req); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{
-				"status": "bad request",
+				"message": "bad request",
 			})
 			return
 		}
@@ -53,7 +53,7 @@ func RegisterBrankRoutes(e *gin.Engine, s services.Services) {
 
 		if err := c.ShouldBindJSON(&req); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{
-				"status": "bad request",
+				"message": "bad request",
 			})
 			return
 		}

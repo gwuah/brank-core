@@ -28,14 +28,14 @@ func NewFidelityTransactionsWorker(r repository.Repo) *FidelityTransactions {
 	}
 }
 
-func CreateFidelityTransactionsJob(linkID int) *FidelityTransactionsJobPayload {
+func CreateFidelityTransactionsJob(appLinkID int) *FidelityTransactionsJobPayload {
 	return &FidelityTransactionsJobPayload{
-		LinkID: linkID,
+		AppLinkID: appLinkID,
 	}
 }
 
 type FidelityTransactionsJobPayload struct {
-	LinkID int
+	AppLinkID int `json:"app_link_id"`
 }
 
 func (ft *FidelityTransactions) Identifier() queue.JobIdentifier {
@@ -49,9 +49,14 @@ func (ft *FidelityTransactions) Worker() que.WorkFunc {
 			return fmt.Errorf("fidelity_transactions_worker: unable to unmarshal job arguments: %v %v", string(j.Args), err)
 		}
 
-		link, err := ft.r.Link.FindById(args.LinkID)
+		appLink, err := ft.r.AppLink.FindById(args.AppLinkID)
 		if err != nil {
-			return fmt.Errorf("fidelity_transactions_worker: failed to find link. err:%v", err)
+			return fmt.Errorf("fidelity_worker: failed to find app-link. err:%v", err)
+		}
+
+		link, err := ft.r.Link.FindById(appLink.LinkID)
+		if err != nil {
+			return fmt.Errorf("fidelity_worker: failed to find link. err:%v", err)
 		}
 
 		meta, err := link.GetMeta()

@@ -1,18 +1,24 @@
 package auth
 
 import (
-	"brank/core/utils"
-	"fmt"
-	"strings"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
 	"golang.org/x/crypto/bcrypt"
 )
 
-type CustomClaims struct {
-	AppID    int `json:"app_id"`
+type ClientClaim struct {
 	ClientID int `json:"client_id"`
+	jwt.StandardClaims
+}
+
+type AppClaim struct {
+	AppID int `json:"app_id"`
+	jwt.StandardClaims
+}
+
+type ExchangeClaim struct {
+	AppLinkID int `json:"app_link_id"`
 	jwt.StandardClaims
 }
 
@@ -25,17 +31,9 @@ func VerifyHash(hash, value string) bool {
 	return bcrypt.CompareHashAndPassword([]byte(hash), []byte(value)) == nil
 }
 
-func NewPublicKey(name string) string {
-	return utils.StringWithCharset(fmt.Sprintf("%s-", strings.ToUpper(name)), 12)
-}
-
-func GenerateExchangeCode() string {
-	return utils.StringWithCharset("", 8)
-}
-
-func GenerateClientAuthToken(ClientID int, key string) (string, error) {
-	const expirationHours = 24 * 90
-	claims := CustomClaims{
+func GenerateClientAccessToken(ClientID int, key string) (string, error) {
+	const expirationHours = 24
+	claims := ClientClaim{
 		ClientID: ClientID,
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: time.Now().Add(time.Hour * expirationHours).Unix(),
@@ -46,12 +44,24 @@ func GenerateClientAuthToken(ClientID int, key string) (string, error) {
 	return token.SignedString([]byte(key))
 }
 
-func GenerateAppAccessToken(appId int, clientId int, key string) (string, error) {
-	claims := CustomClaims{
-		AppID:    appId,
-		ClientID: clientId,
+func GenerateAppAccessToken(appId int, key string) (string, error) {
+	claims := AppClaim{
+		AppID: appId,
 		StandardClaims: jwt.StandardClaims{
 			IssuedAt: jwt.TimeFunc().Unix(),
+		},
+	}
+	token := jwt.NewWithClaims(jwt.SigningMethodHS512, claims)
+	return token.SignedString([]byte(key))
+}
+
+func GenerateExchangeAccessToken(appLinkID int, key string) (string, error) {
+	const expirationHours = 24 * 30
+	claims := ExchangeClaim{
+		AppLinkID: appLinkID,
+		StandardClaims: jwt.StandardClaims{
+			ExpiresAt: time.Now().Add(time.Hour * expirationHours).Unix(),
+			IssuedAt:  jwt.TimeFunc().Unix(),
 		},
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS512, claims)

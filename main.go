@@ -4,6 +4,8 @@ import (
 	"brank/integrations"
 
 	"brank/core"
+	serv "brank/core/server"
+
 	"brank/core/models"
 	"brank/core/mq"
 	"brank/core/queue"
@@ -45,16 +47,16 @@ func main() {
 	}
 
 	cache := storage.NewRedis(c)
-	r := repository.NewRepo(pg)
+	r := repository.New(pg)
 
-	i := integrations.NewBankIntegrations()
+	i := integrations.New()
 
-	mq, err := mq.NewMQ(c)
+	mq, err := mq.New(c)
 	if err != nil {
 		log.Fatal("failed to initialize messaging queue. err", err)
 	}
 
-	q, err := queue.NewQue(c)
+	q, err := queue.New(c)
 	if err != nil {
 		log.Fatal("failed to initialize queue. err", err)
 	}
@@ -62,13 +64,14 @@ func main() {
 		[]queue.JobWorker{
 			que_workers.NewFidelityWorker(i, r, q),
 			que_workers.NewFidelityTransactionsWorker(r),
+			que_workers.NewWebhookWorker(r, q),
 		},
 	)
 	go workers.Start()
 
-	s := services.NewService(r, c, mq, cache, q, *i)
-	server := core.NewHTTPServer(c)
-	router := routes.NewRouter(server.Engine, mq, cache, r, q, c, s)
+	s := services.New(r, c, mq, cache, q, *i)
+	server := serv.NewHTTPServer(c)
+	router := routes.New(server.Engine, mq, cache, r, q, c, s)
 
 	go func() {
 		stream := mq.Subscribe([]string{utils.GenerateTopic("validate_login")})

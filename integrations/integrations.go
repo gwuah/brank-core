@@ -11,7 +11,7 @@ type Integrations struct {
 	Fidelity *fidelity.Integration
 }
 
-func NewBankIntegrations() *Integrations {
+func New() *Integrations {
 	httpClient := http.Client{Timeout: time.Minute}
 	return &Integrations{
 		Fidelity: fidelity.New(axios.New(httpClient)),

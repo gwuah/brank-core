@@ -2,7 +2,6 @@ package workers
 
 import (
 	"brank/core/queue"
-	"brank/integrations"
 	"brank/repository"
 	"encoding/json"
 	"errors"
@@ -16,17 +15,25 @@ const (
 )
 
 type Webook struct {
+	r repository.Repo
+	q *queue.Que
 }
 
 type WebHookJobPayload struct {
+	AppLinkID int `json:"app_link_id"`
 }
 
-func CreateWebhookJob(linkID int) *WebHookJobPayload {
-	return &WebHookJobPayload{}
+func CreateWebhookJob(appLinkID int) *WebHookJobPayload {
+	return &WebHookJobPayload{
+		AppLinkID: appLinkID,
+	}
 }
 
-func NewWebhookWorker(i *integrations.Integrations, r repository.Repo) *Webook {
-	return &Webook{}
+func NewWebhookWorker(r repository.Repo, q *queue.Que) *Webook {
+	return &Webook{
+		r: r,
+		q: q,
+	}
 }
 
 func (w *Webook) Identifier() queue.JobIdentifier {

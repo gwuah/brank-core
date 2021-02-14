@@ -26,12 +26,12 @@ type Fidelity struct {
 }
 
 type FidelityJobPayload struct {
-	LinkID int `json:"link_id"`
+	AppLinkID int `json:"app_link_id"`
 }
 
-func CreateFidelityJob(linkID int) *FidelityJobPayload {
+func CreateFidelityJob(appLinkID int) *FidelityJobPayload {
 	return &FidelityJobPayload{
-		LinkID: linkID,
+		AppLinkID: appLinkID,
 	}
 }
 
@@ -54,7 +54,12 @@ func (f *Fidelity) Worker() que.WorkFunc {
 			return fmt.Errorf("fidelity_worker: unable to unmarshal job arguments: %v %v", string(j.Args), err)
 		}
 
-		link, err := f.r.Link.FindById(args.LinkID)
+		appLink, err := f.r.AppLink.FindById(args.AppLinkID)
+		if err != nil {
+			return fmt.Errorf("fidelity_worker: failed to find app-link. err:%v", err)
+		}
+
+		link, err := f.r.Link.FindById(appLink.LinkID)
 		if err != nil {
 			return fmt.Errorf("fidelity_worker: failed to find link. err:%v", err)
 		}
@@ -171,7 +176,6 @@ func (f *Fidelity) Worker() que.WorkFunc {
 			return fmt.Errorf("fidelity_worker: failed to queue processing job. err:%v", err)
 		}
 
-		// return nil
-		return errors.New("lkeep")
+		return nil
 	}
 }

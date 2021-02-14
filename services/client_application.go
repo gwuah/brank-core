@@ -29,7 +29,7 @@ func (c *clientApplicationLayer) CreateApp(req core.CreateAppRequest) core.Brank
 		Logo:        req.Logo,
 		CallbackUrl: req.CallbackUrl,
 		ClientID:    req.ClientID,
-		PublicKey:   auth.NewPublicKey(strings.ToLower(req.Name)),
+		PublicKey:   utils.NewPublicKey(strings.ToLower(req.Name)),
 	}
 	err := c.repo.ClientApplication.Create(&app)
 	if err != nil {
@@ -43,7 +43,7 @@ func (c *clientApplicationLayer) CreateApp(req core.CreateAppRequest) core.Brank
 			},
 		}
 	}
-	accessToken, err := auth.GenerateAppAccessToken(app.ID, req.ClientID, c.config.JWT_SIGNING_KEY)
+	accessToken, err := auth.GenerateAppAccessToken(app.ID, c.config.JWT_SIGNING_KEY)
 	if err != nil {
 		log.Println("failed to generate access token", err)
 		return core.BrankResponse{

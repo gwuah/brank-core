@@ -1,0 +1,97 @@
+package auth
+
+import (
+	"brank/core"
+	"log"
+	"net/http"
+	"strings"
+
+	"github.com/dgrijalva/jwt-go"
+	"github.com/gin-gonic/gin"
+)
+
+func ExtractToken(val string) (token string, ok bool) {
+	authHeaderParts := strings.Split(val, " ")
+	if len(authHeaderParts) != 2 || !strings.EqualFold(authHeaderParts[0], "bearer") {
+		return "", false
+	}
+	return authHeaderParts[1], true
+}
+
+func CORS() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
+		c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
+		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, accept, origin, Cache-Control, X-Requested-With")
+		c.Writer.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS, GET, PUT")
+		if c.Request.Method == "OPTIONS" {
+			c.AbortWithStatus(204)
+			return
+		}
+		c.Next()
+	}
+}
+
+func ExtractTokenFromAuthHeader(cfg *core.Config) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		token, ok := ExtractToken(c.Request.Header.Get("Authorization"))
+		if ok {
+			c.Set("token", token)
+		}
+		c.Next()
+	}
+}
+
+func AuthorizeProductRequest(cfg *core.Config) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		token, exists := c.Get("token")
+		if !exists {
+			c.JSON(http.StatusUnauthorized, gin.H{
+				"message": "unauthorized",
+			})
+			c.Abort()
+			return
+		}
+
+		tokenString, _ := token.(string)
+		claim := ExchangeClaim{}
+		_, err := jwt.ParseWithClaims(tokenString, &claim, func(token *jwt.Token) (interface{}, error) {
+			return cfg.JWT_SIGNING_KEY, nil
+		})
+		if err != nil {
+			log.Println("err processing claim:", err)
+			c.JSON(http.StatusUnauthorized, gin.H{
+				"message": "unauthorized",
+			})
+			c.Abort()
+			return
+		}
+	}
+}
+
+func AuthorizeClientRequest(cfg *core.Config) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		token, exists := c.Get("token")
+		if !exists {
+			c.JSON(http.StatusUnauthorized, gin.H{
+				"message": "unauthorized",
+			})
+			c.Abort()
+			return
+		}
+
+		tokenString, _ := token.(string)
+		claim := ClientClaim{}
+		_, err := jwt.ParseWithClaims(tokenString, &claim, func(token *jwt.Token) (interface{}, error) {
+			return cfg.JWT_SIGNING_KEY, nil
+		})
+		if err != nil {
+			log.Println("err processing claim:", err)
+			c.JSON(http.StatusUnauthorized, gin.H{
+				"message": "unauthorized",
+			})
+			c.Abort()
+			return
+		}
+	}
+}

@@ -1,6 +1,8 @@
 package core
 
 import (
+	"brank/core"
+	"brank/core/auth"
 	"fmt"
 	"log"
 	"net/http"
@@ -12,15 +14,17 @@ import (
 
 type Server struct {
 	Engine *gin.Engine
-	config *Config
+	config *core.Config
 }
 
-func NewHTTPServer(cfg *Config) *Server {
+func NewHTTPServer(cfg *core.Config) *Server {
 	engine := gin.Default()
-	engine.Use(CORS())
+	engine.Use(auth.CORS())
+	engine.Use(auth.ExtractTokenFromAuthHeader(cfg))
+
 	engine.GET("/", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
-			"status": "OK",
+			"message": "OK",
 		})
 	})
 	return &Server{

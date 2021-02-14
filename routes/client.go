@@ -2,6 +2,8 @@ package routes
 
 import (
 	"brank/core"
+	"brank/core/auth"
+	"brank/core/utils"
 	"brank/services"
 	"net/http"
 
@@ -10,11 +12,27 @@ import (
 
 func RegisterClientRoutes(e *gin.RouterGroup, s services.Services) {
 
+	e.GET("/:id", auth.AuthorizeClientRequest(s.Config), func(c *gin.Context) {
+		id := c.Param("id")
+
+		response := s.Clients.Get(utils.ConvertToInt(id))
+
+		if response.Error {
+			c.JSON(response.Code, gin.H{
+				"message": response.Meta.Message,
+			})
+			return
+		}
+
+		c.JSON(response.Code, response.Meta)
+
+	})
+
 	e.POST("", func(c *gin.Context) {
 		var req core.CreateClientRequest
 		if err := c.ShouldBindJSON(&req); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{
-				"status": "bad request",
+				"message": "bad request",
 			})
 			return
 		}
@@ -36,7 +54,7 @@ func RegisterClientRoutes(e *gin.RouterGroup, s services.Services) {
 		var req core.LoginClientRequest
 		if err := c.ShouldBindJSON(&req); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{
-				"status": "bad request",
+				"message": "bad request",
 			})
 			return
 		}

@@ -48,7 +48,7 @@ func (c *clientLayer) CreateClient(req core.CreateClientRequest) core.BrankRespo
 		return utils.Error(err, nil, http.StatusInternalServerError)
 	}
 
-	token, err := auth.GenerateClientAuthToken(client.ID, c.config.JWT_SIGNING_KEY)
+	token, err := auth.GenerateClientAccessToken(client.ID, c.config.JWT_SIGNING_KEY)
 	if err != nil {
 		return utils.Error(err, nil, http.StatusInternalServerError)
 	}
@@ -71,13 +71,24 @@ func (c *clientLayer) Login(req core.LoginClientRequest) core.BrankResponse {
 		return utils.Error(err, utils.String("email/password invalid"), http.StatusUnauthorized)
 	}
 
-	token, err := auth.GenerateClientAuthToken(client.ID, c.config.JWT_SIGNING_KEY)
+	token, err := auth.GenerateClientAccessToken(client.ID, c.config.JWT_SIGNING_KEY)
 	if err != nil {
 		return utils.Error(err, nil, http.StatusInternalServerError)
 	}
 
 	return utils.Success(&map[string]interface{}{
-		"token": token,
-	}, utils.String("client login successful"))
+		"token":  token,
+		"client": client,
+	}, nil)
 
+}
+
+func (c *clientLayer) Get(id int) core.BrankResponse {
+	client, err := c.repo.Clients.FindByID(id)
+	if err != nil {
+		return utils.Error(err, utils.String("not found"), http.StatusNotFound)
+	}
+	return utils.Success(&map[string]interface{}{
+		"client": client,
+	}, nil)
 }

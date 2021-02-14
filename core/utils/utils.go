@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strings"
 
 	"brank/core"
 	"math/rand"
@@ -120,4 +121,12 @@ func Reverse(s string) string {
 		runes[i], runes[j] = runes[j], runes[i]
 	}
 	return string(runes)
+}
+
+func NewPublicKey(name string) string {
+	return StringWithCharset(fmt.Sprintf("%s-", strings.ToUpper(name)), 12)
+}
+
+func GenerateExchangeCode() string {
+	return StringWithCharset("", 8)
 }

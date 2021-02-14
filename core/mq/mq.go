@@ -8,6 +8,6 @@ type MQ interface {
 	Close()
 }
 
-func NewMQ(c *core.Config) (MQ, error) {
+func New(c *core.Config) (MQ, error) {
 	return NewKafkaMQ(c)
 }

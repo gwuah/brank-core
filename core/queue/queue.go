@@ -53,7 +53,7 @@ func getPgxPool(dbUri string) (*pgx.ConnPool, error) {
 	return pgxpool, nil
 }
 
-func NewQue(c *core.Config) (*Que, error) {
+func New(c *core.Config) (*Que, error) {
 	q := &Que{dbURI: storage.GeneratePostgresURI(c), config: c}
 	pgxpool, err := getPgxPool(q.dbURI)
 	if err != nil {

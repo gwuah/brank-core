@@ -10,9 +10,10 @@ type Repo struct {
 	Bank              *bankLayer
 	Customer          *customerLayer
 	Account           *accountLayer
+	AppLink           *appLinkLayer
 }
 
-func NewRepo(db *gorm.DB) Repo {
+func New(db *gorm.DB) Repo {
 	return Repo{
 		Transactions:      newTransactionLayer(db),
 		Clients:           newClientLayer(db),
@@ -21,5 +22,6 @@ func NewRepo(db *gorm.DB) Repo {
 		Bank:              newBankLayer(db),
 		Customer:          newCustomerLayer(db),
 		Account:           newAccountLayer(db),
+		AppLink:           newAppLinkLayer(db),
 	}
 }

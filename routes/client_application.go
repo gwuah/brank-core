@@ -14,7 +14,7 @@ func RegisterClientApplicationRoutes(e *gin.RouterGroup, s services.Services) {
 		var req core.CreateAppRequest
 		if err := c.ShouldBindJSON(&req); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{
-				"status": "bad request",
+				"message": "bad request",
 			})
 			return
 		}

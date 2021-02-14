@@ -10,12 +10,16 @@ import (
 
 type Direction string
 type Status string
+type AppLinkState string
 
 var (
 	Debit   Direction = "debit"
 	Credit  Direction = "credit"
 	Failed  Status    = "failed"
 	Success Status    = "success"
+
+	Claimed   AppLinkState = "claimed"
+	Unclaimed AppLinkState = "unclaimed"
 )
 
 type LinkConfiguration struct {
@@ -103,14 +107,20 @@ type LinkMeta struct {
 
 type Link struct {
 	Model
-	Code     string         `json:"code"`
 	BankID   int            `json:"bank_id"`
 	Bank     *Bank          `json:"bank,omitempty"`
-	AppID    int            `json:"app_id"`
-	App      *App           `json:"app,omitempty"`
 	Username string         `json:"username"`
 	Password string         `json:"password"`
 	Meta     postgres.Jsonb `json:"meta"`
+}
+
+type AppLink struct {
+	Model
+	Code        string       `json:"code"`
+	AccessToken string       `json:"access_token"`
+	AppID       int          `json:"app_id"`
+	LinkID      int          `json:"link_id"`
+	State       AppLinkState `json:"state"`
 }
 
 func (b *Bank) GetMeta() (*BankMeta, error) {

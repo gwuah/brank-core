@@ -31,3 +31,11 @@ func (cl *clientLayer) FindByEmail(email string) (*models.Client, error) {
 	}
 	return &client, nil
 }
+
+func (cl *clientLayer) FindByID(id int) (*models.Client, error) {
+	var client models.Client
+	if err := cl.db.First(&client, id).Error; err != nil {
+		return &client, err
+	}
+	return &client, nil
+}
