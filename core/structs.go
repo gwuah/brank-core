@@ -44,11 +44,6 @@ type ExchangeContractCode struct {
 	Code string `json:"code"`
 }
 
-type TransactionsRequest struct {
-	CustomerId int `json:"customer_id"`
-	Page       int `json:"page"`
-}
-
 type VerifyLoginsRequest struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
@@ -72,4 +67,17 @@ type BrankResponse struct {
 	Error bool      `json:"error"`
 	Code  int       `json:"code"`
 	Meta  BrankMeta `json:"meta"`
+}
+
+// Auth Endpoints
+type AuthParams struct {
+	AccessToken  string `json:"access_token"`
+	AppLinkToken string `json:"link_token"`
+}
+
+// Product Endpoints
+type TransactionsRequest struct {
+	AuthParams
+	Offset int `json:"offset"`
+	Limit  int `json:"limit"`
 }

@@ -41,30 +41,15 @@ func ExtractTokenFromAuthHeader(cfg *core.Config) gin.HandlerFunc {
 	}
 }
 
-func AuthorizeProductRequest(cfg *core.Config) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		token, exists := c.Get("token")
-		if !exists {
-			c.JSON(http.StatusUnauthorized, gin.H{
-				"message": "unauthorized",
-			})
-			c.Abort()
-			return
-		}
-
-		tokenString, _ := token.(string)
-		claim := ExchangeClaim{}
-		_, err := jwt.ParseWithClaims(tokenString, &claim, func(token *jwt.Token) (interface{}, error) {
-			return []byte(cfg.JWT_SIGNING_KEY), nil
-		})
-		if err != nil {
-			c.JSON(http.StatusUnauthorized, gin.H{
-				"message": "unauthorized",
-			})
-			c.Abort()
-			return
-		}
+func AuthorizeProductRequest(cfg *core.Config, req core.AuthParams) (int, error) {
+	claim := ExchangeClaim{}
+	_, err := jwt.ParseWithClaims(req.AppLinkToken, &claim, func(token *jwt.Token) (interface{}, error) {
+		return []byte(cfg.JWT_SIGNING_KEY), nil
+	})
+	if err != nil {
+		return 0, err
 	}
+	return claim.AppLinkID, nil
 }
 
 func AuthorizeClientRequest(cfg *core.Config) gin.HandlerFunc {
@@ -90,5 +75,7 @@ func AuthorizeClientRequest(cfg *core.Config) gin.HandlerFunc {
 			c.Abort()
 			return
 		}
+
+		c.Set("client_id", claim.ClientID)
 	}
 }

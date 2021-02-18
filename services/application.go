@@ -58,3 +58,23 @@ func (a *applicationLayer) GetByPublicKey(key string) core.BrankResponse {
 		"app": app,
 	}, nil)
 }
+
+func (a *applicationLayer) GetByID(id int) core.BrankResponse {
+	app, err := a.repo.Application.FindByID(id)
+	if err != nil {
+		return utils.Error(err, utils.String("not found"), http.StatusNotFound)
+	}
+	return utils.Success(&map[string]interface{}{
+		"app": app,
+	}, nil)
+}
+
+func (a *applicationLayer) All(id int) core.BrankResponse {
+	apps, err := a.repo.Application.All("client_id=?", id)
+	if err != nil {
+		return utils.Error(err, nil, http.StatusInternalServerError)
+	}
+	return utils.Success(&map[string]interface{}{
+		"apps": apps,
+	}, nil)
+}

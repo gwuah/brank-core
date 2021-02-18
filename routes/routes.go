@@ -2,11 +2,12 @@ package routes
 
 import (
 	"brank/core"
-	"brank/core/auth"
 	"brank/core/mq"
 	"brank/services"
 
 	"brank/core/queue"
+	"brank/routes/products"
+
 	"brank/repository"
 
 	"github.com/gin-gonic/gin"
@@ -47,5 +48,5 @@ func (r *router) RegisterRoutes() {
 	RegisterApplicationRoutes(r.engine.Group("/applications"), r.services)
 
 	// Transactions
-	RegisterTransactionsRoutes(r.engine.Group("/transactions", auth.AuthorizeProductRequest(r.config)), r.services)
+	products.RegisterTransactionsRoutes(r.engine.Group("/transactions"), r.services)
 }

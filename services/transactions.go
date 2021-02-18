@@ -2,9 +2,18 @@ package services
 
 import (
 	"brank/core"
+	"brank/core/utils"
 	"brank/repository"
+	"fmt"
 	"net/http"
+	"strings"
 )
+
+type GetTransactionsParams struct {
+	AppLinkID int `json:"app_link_id"`
+	Offset    int `json:"offset"`
+	Limit     int `json:"limit"`
+}
 
 type transactionsLayer struct {
 	repo   repository.Repo
@@ -18,48 +27,36 @@ func newTransactionLayer(r repository.Repo, c *core.Config) *transactionsLayer {
 	}
 }
 
-func (t *transactionsLayer) GetTransactions(req core.TransactionsRequest) core.BrankResponse {
-	// _, err := t.repo.C.FindById(req.CustomerId)
-	// if err != nil {
-	// 	log.Println("failed to load transactions", err)
-	// 	return BrankResponse{
-	// 		Error: true,
-	// 		Code:  http.StatusNotFound,
-	// 		Meta: BrankMeta{
-	// 			Data:    map[string]interface{}{},
-	// 			Message: "customer not found",
-	// 		},
-	// 	}
-	// }
-	// res, err := repo.Transactions.Find(map[string]interface{}{
-	// 	// "direction": "debit",
-	// }, req.Page)
-
-	// if err != nil {
-	// 	log.Println("failed to load transactions", err)
-	// 	return BrankResponse{
-	// 		Error: true,
-	// 		Code:  http.StatusInternalServerError,
-	// 		Meta: BrankMeta{
-	// 			Data:    map[string]interface{}{},
-	// 			Message: "failed to load transactions",
-	// 		},
-	// 	}
-	// }
-
-	return core.BrankResponse{
-		Error: false,
-		Code:  http.StatusOK,
-		Meta: core.BrankMeta{
-			// Data: res.Records,
-			// Pagination: &core.BrankPagination{
-			// 	Count:        res.TotalRecord,
-			// 	NextPage:     res.NextPage,
-			// 	CurrentPage:  res.Page,
-			// 	PreviousPage: res.PrevPage,
-			// },
-			Message: "transactionsyyy successfully retrieved",
-		},
+func (t *transactionsLayer) GetTransactions(req GetTransactionsParams) core.BrankResponse {
+	appLink, err := t.repo.AppLink.FindById(req.AppLinkID)
+	if err != nil {
+		return utils.Error(err, nil, http.StatusInternalServerError)
 	}
+
+	accounts, err := t.repo.Account.Find("link_id=?", appLink.LinkID)
+	if err != nil {
+		return utils.Error(err, nil, http.StatusInternalServerError)
+	}
+
+	var queryArray []string
+	for _, account := range *accounts {
+		queryArray = append(queryArray, fmt.Sprintf("account_id=%d", account.ID))
+	}
+
+	res, err := t.repo.Transactions.Find(repository.Pagination{
+		Offset: req.Offset,
+		Limit:  req.Limit,
+	}, strings.Join(queryArray, " OR "))
+
+	if err != nil {
+		return utils.Error(err, nil, http.StatusInternalServerError)
+	}
+
+	return utils.Success(&map[string]interface{}{
+		"transactions": res.Records,
+		"pagination": repository.Pagination{
+			Total: res.Pagination.Total,
+		},
+	}, nil)
 
 }

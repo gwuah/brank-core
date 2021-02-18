@@ -1,6 +1,21 @@
 package repository
 
-import "gorm.io/gorm"
+import (
+	"brank/core/models"
+
+	"gorm.io/gorm"
+)
+
+type Pagination struct {
+	Offset int `json:"offset"`
+	Limit  int `json:"limit"`
+	Total  int `json:"total"`
+}
+
+type BulkLoad struct {
+	Pagination
+	Records []models.Transaction `json:"records"`
+}
 
 type Repo struct {
 	Transactions *transactionLayer

@@ -37,3 +37,19 @@ func (a *applicationLayer) FindByPublicKey(key string) (*models.App, error) {
 	}
 	return &app, nil
 }
+
+func (a *applicationLayer) FindByID(id int) (*models.App, error) {
+	var app models.App
+	if err := a.db.Where("id = ?", id).First(&app).Error; err != nil {
+		return &app, err
+	}
+	return &app, nil
+}
+
+func (a *applicationLayer) All(query string, params ...interface{}) (*[]models.App, error) {
+	var apps []models.App
+	if err := a.db.Where(query, params...).Find(&apps).Error; err != nil {
+		return &apps, err
+	}
+	return &apps, nil
+}
