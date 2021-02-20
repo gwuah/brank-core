@@ -17,7 +17,7 @@ type Server struct {
 	config *core.Config
 }
 
-func NewHTTPServer(cfg *core.Config) *Server {
+func NewHTTPServer(cfg *core.Config, auth *auth.Auth) *Server {
 	engine := gin.Default()
 	engine.Use(auth.CORS())
 	engine.Use(auth.ExtractTokenFromAuthHeader(cfg))

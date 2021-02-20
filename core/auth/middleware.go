@@ -9,7 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func ExtractToken(val string) (token string, ok bool) {
+func extractToken(val string) (token string, ok bool) {
 	authHeaderParts := strings.Split(val, " ")
 	if len(authHeaderParts) != 2 || !strings.EqualFold(authHeaderParts[0], "bearer") {
 		return "", false
@@ -17,7 +17,7 @@ func ExtractToken(val string) (token string, ok bool) {
 	return authHeaderParts[1], true
 }
 
-func CORS() gin.HandlerFunc {
+func (a Auth) CORS() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
 		c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
@@ -31,9 +31,9 @@ func CORS() gin.HandlerFunc {
 	}
 }
 
-func ExtractTokenFromAuthHeader(cfg *core.Config) gin.HandlerFunc {
+func (a Auth) ExtractTokenFromAuthHeader(cfg *core.Config) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		token, ok := ExtractToken(c.Request.Header.Get("Authorization"))
+		token, ok := extractToken(c.Request.Header.Get("Authorization"))
 		if ok {
 			c.Set("token", token)
 		}
@@ -41,7 +41,18 @@ func ExtractTokenFromAuthHeader(cfg *core.Config) gin.HandlerFunc {
 	}
 }
 
-func AuthorizeProductRequest(cfg *core.Config, req core.AuthParams) (int, error) {
+func (a Auth) ParseAppToken(cfg *core.Config, req core.AuthParams) (int, error) {
+	var claim AppClaim
+	_, err := jwt.ParseWithClaims(req.AppLinkToken, &claim, func(token *jwt.Token) (interface{}, error) {
+		return []byte(cfg.JWT_SIGNING_KEY), nil
+	})
+	if err != nil {
+		return 0, err
+	}
+	return claim.AppID, nil
+}
+
+func (a Auth) AuthorizeProductRequest(cfg *core.Config, req core.AuthParams) (int, error) {
 	claim := ExchangeClaim{}
 	_, err := jwt.ParseWithClaims(req.AppLinkToken, &claim, func(token *jwt.Token) (interface{}, error) {
 		return []byte(cfg.JWT_SIGNING_KEY), nil
@@ -52,7 +63,7 @@ func AuthorizeProductRequest(cfg *core.Config, req core.AuthParams) (int, error)
 	return claim.AppLinkID, nil
 }
 
-func AuthorizeClientRequest(cfg *core.Config) gin.HandlerFunc {
+func (a Auth) AuthorizeClientRequest(cfg *core.Config) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		token, exists := c.Get("token")
 		if !exists {

@@ -10,9 +10,9 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func RegisterClientRoutes(e *gin.RouterGroup, s services.Services) {
+func RegisterClientRoutes(e *gin.RouterGroup, s services.Services, a *auth.Auth) {
 
-	e.GET("/:id", auth.AuthorizeClientRequest(s.Config), func(c *gin.Context) {
+	e.GET("/:id", a.AuthorizeClientRequest(s.Config), func(c *gin.Context) {
 		id := c.Param("id")
 
 		response := s.Clients.Get(utils.ConvertToInt(id))

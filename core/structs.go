@@ -40,10 +40,6 @@ type VerifyOTPRequest struct {
 	Otp       string `json:"otp"`
 }
 
-type ExchangeContractCode struct {
-	Code string `json:"code"`
-}
-
 type VerifyLoginsRequest struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
@@ -51,17 +47,16 @@ type VerifyLoginsRequest struct {
 	ClientId int    `json:"client_id"`
 }
 
-type BrankPagination struct {
-	CurrentPage  int   `json:"current_page,omitempty"`
-	NextPage     int   `json:"next_page,omitempty"`
-	PreviousPage int   `json:"previous_page,omitempty"`
-	Count        int64 `json:"count"`
+type Pagination struct {
+	Offset int `json:"offset"`
+	Limit  int `json:"limit"`
+	Count  int `json:"count"`
 }
 
 type BrankMeta struct {
-	Data       interface{}      `json:"data,omitempty"`
-	Pagination *BrankPagination `json:"pagination,omitempty"`
-	Message    string           `json:"message"`
+	Data       interface{} `json:"data,omitempty"`
+	Pagination *Pagination `json:"pagination,omitempty"`
+	Message    string      `json:"message"`
 }
 type BrankResponse struct {
 	Error bool      `json:"error"`
@@ -78,6 +73,10 @@ type AuthParams struct {
 // Product Endpoints
 type TransactionsRequest struct {
 	AuthParams
-	Offset int `json:"offset"`
-	Limit  int `json:"limit"`
+	Pagination
+}
+
+type ExchangeContractCode struct {
+	AccessToken string `json:"access_token"`
+	Code        string `json:"code"`
 }

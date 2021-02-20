@@ -10,7 +10,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func RegisterApplicationRoutes(e *gin.RouterGroup, s services.Services) {
+func RegisterApplicationRoutes(e *gin.RouterGroup, s services.Services, a *auth.Auth) {
 
 	e.POST("", func(c *gin.Context) {
 		var req core.CreateAppRequest
@@ -80,7 +80,7 @@ func RegisterApplicationRoutes(e *gin.RouterGroup, s services.Services) {
 
 	})
 
-	e.GET("", auth.AuthorizeClientRequest(s.Config), func(c *gin.Context) {
+	e.GET("", a.AuthorizeClientRequest(s.Config), func(c *gin.Context) {
 		clientId := c.GetInt("client_id")
 		response := s.Application.All(clientId)
 		if response.Error {

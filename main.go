@@ -4,6 +4,7 @@ import (
 	"brank/integrations"
 
 	"brank/core"
+	"brank/core/auth"
 	serv "brank/core/server"
 
 	"brank/core/models"
@@ -69,9 +70,10 @@ func main() {
 	)
 	go workers.Start()
 
-	s := services.New(r, c, mq, cache, q, *i)
-	server := serv.NewHTTPServer(c)
-	router := routes.New(server.Engine, mq, cache, r, q, c, s)
+	a := auth.New(r)
+	s := services.New(r, c, mq, cache, q, *i, a)
+	server := serv.NewHTTPServer(c, a)
+	router := routes.New(server.Engine, mq, cache, r, q, c, s, a)
 
 	go func() {
 		stream := mq.Subscribe([]string{utils.GenerateTopic("validate_login")})

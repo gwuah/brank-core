@@ -14,12 +14,14 @@ import (
 type clientLayer struct {
 	repo   repository.Repo
 	config *core.Config
+	auth   *auth.Auth
 }
 
-func newClientLayer(r repository.Repo, c *core.Config) *clientLayer {
+func newClientLayer(r repository.Repo, c *core.Config, a *auth.Auth) *clientLayer {
 	return &clientLayer{
 		repo:   r,
 		config: c,
+		auth:   a,
 	}
 }
 
@@ -33,7 +35,7 @@ func (c *clientLayer) CreateClient(req core.CreateClientRequest) core.BrankRespo
 		return utils.Error(err, nil, http.StatusInternalServerError)
 	}
 
-	passwordHash, err := auth.Hash(req.Password)
+	passwordHash, err := c.auth.Hash(req.Password)
 	if err != nil {
 		return utils.Error(err, nil, http.StatusInternalServerError)
 	}
@@ -48,7 +50,7 @@ func (c *clientLayer) CreateClient(req core.CreateClientRequest) core.BrankRespo
 		return utils.Error(err, nil, http.StatusInternalServerError)
 	}
 
-	token, err := auth.GenerateClientAccessToken(client.ID, c.config.JWT_SIGNING_KEY)
+	token, err := c.auth.GenerateClientAccessToken(client.ID, c.config.JWT_SIGNING_KEY)
 	if err != nil {
 		return utils.Error(err, nil, http.StatusInternalServerError)
 	}
@@ -66,12 +68,12 @@ func (c *clientLayer) Login(req core.LoginClientRequest) core.BrankResponse {
 		return utils.Error(err, utils.String("email/password invalid"), http.StatusUnauthorized)
 	}
 
-	status := auth.VerifyHash(client.Password, req.Password)
+	status := c.auth.VerifyHash(client.Password, req.Password)
 	if !status {
 		return utils.Error(err, utils.String("email/password invalid"), http.StatusUnauthorized)
 	}
 
-	token, err := auth.GenerateClientAccessToken(client.ID, c.config.JWT_SIGNING_KEY)
+	token, err := c.auth.GenerateClientAccessToken(client.ID, c.config.JWT_SIGNING_KEY)
 	if err != nil {
 		return utils.Error(err, nil, http.StatusInternalServerError)
 	}

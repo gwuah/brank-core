@@ -23,15 +23,17 @@ type appLinkLayer struct {
 	config       *core.Config
 	integrations integrations.Integrations
 	q            *queue.Que
+	auth         *auth.Auth
 }
 
-func newAppLinkLayer(r repository.Repo, c *core.Config, kv *redis.Client, q *queue.Que, i integrations.Integrations) *appLinkLayer {
+func newAppLinkLayer(r repository.Repo, c *core.Config, kv *redis.Client, q *queue.Que, i integrations.Integrations, a *auth.Auth) *appLinkLayer {
 	return &appLinkLayer{
 		repo:         r,
 		config:       c,
 		integrations: i,
 		cache:        kv,
 		q:            q,
+		auth:         a,
 	}
 }
 
@@ -46,7 +48,7 @@ func (l *appLinkLayer) ExchageContractCode(req core.ExchangeContractCode) core.B
 		return utils.Error(err, nil, http.StatusInternalServerError)
 	}
 
-	accessToken, err := auth.GenerateExchangeAccessToken(appLink.ID, l.config.JWT_SIGNING_KEY)
+	accessToken, err := l.auth.GenerateExchangeAccessToken(appLink.ID, l.config.JWT_SIGNING_KEY)
 	if err != nil {
 		return utils.Error(err, nil, http.StatusInternalServerError)
 	}

@@ -9,9 +9,9 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func RegisterTransactionsRoutes(e *gin.RouterGroup, s services.Services, a *auth.Auth) {
-	e.POST("", func(c *gin.Context) {
-		var req core.TransactionsRequest
+func RegisterAppLinkRoutes(e *gin.RouterGroup, s services.Services, a *auth.Auth) {
+	e.POST("/exchange", func(c *gin.Context) {
+		var req core.ExchangeContractCode
 		if err := c.ShouldBindJSON(&req); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{
 				"message": "bad request",
@@ -19,7 +19,10 @@ func RegisterTransactionsRoutes(e *gin.RouterGroup, s services.Services, a *auth
 			return
 		}
 
-		appLinkId, err := a.AuthorizeProductRequest(s.Config, req.AuthParams)
+		_, err := a.ParseAppToken(s.Config, core.AuthParams{
+			AccessToken: req.AccessToken,
+		})
+
 		if err != nil {
 			c.JSON(http.StatusUnauthorized, gin.H{
 				"message": "unauthorized",
@@ -27,11 +30,8 @@ func RegisterTransactionsRoutes(e *gin.RouterGroup, s services.Services, a *auth
 			return
 		}
 
-		response := s.Transactions.GetTransactions(services.GetTransactionsParams{
-			AppLinkID: appLinkId,
-			Offset:    req.Offset,
-			Limit:     req.Limit,
-		})
+		response := s.AppLinks.ExchageContractCode(req)
+
 		if response.Error {
 			c.JSON(response.Code, gin.H{
 				"message": response.Meta.Message,
@@ -40,6 +40,7 @@ func RegisterTransactionsRoutes(e *gin.RouterGroup, s services.Services, a *auth
 		}
 
 		c.JSON(response.Code, response.Meta)
+
 	})
 
 }

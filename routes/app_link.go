@@ -54,26 +54,4 @@ func RegisterAppLinkRoutes(e *gin.RouterGroup, s services.Services) {
 
 	})
 
-	e.POST("/exchange", func(c *gin.Context) {
-		var req core.ExchangeContractCode
-		if err := c.ShouldBindJSON(&req); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{
-				"message": "bad request",
-			})
-			return
-		}
-
-		response := s.AppLinks.ExchageContractCode(req)
-
-		if response.Error {
-			c.JSON(response.Code, gin.H{
-				"message": response.Meta.Message,
-			})
-			return
-		}
-
-		c.JSON(response.Code, response.Meta)
-
-	})
-
 }

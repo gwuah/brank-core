@@ -13,12 +13,14 @@ import (
 type applicationLayer struct {
 	repo   repository.Repo
 	config *core.Config
+	auth   *auth.Auth
 }
 
-func newApplicationLayer(r repository.Repo, c *core.Config) *applicationLayer {
+func newApplicationLayer(r repository.Repo, c *core.Config, a *auth.Auth) *applicationLayer {
 	return &applicationLayer{
 		repo:   r,
 		config: c,
+		auth:   a,
 	}
 }
 
@@ -34,7 +36,7 @@ func (a *applicationLayer) CreateApp(req core.CreateAppRequest) core.BrankRespon
 		return utils.Error(err, nil, http.StatusInternalServerError)
 	}
 
-	accessToken, err := auth.GenerateAppAccessToken(app.ID, a.config.JWT_SIGNING_KEY)
+	accessToken, err := a.auth.GenerateAppAccessToken(app.ID, a.config.JWT_SIGNING_KEY)
 	if err != nil {
 		return utils.Error(err, nil, http.StatusInternalServerError)
 	}
