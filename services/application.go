@@ -83,8 +83,8 @@ func (a *applicationLayer) UpdateApp(req core.UpdateAppRequest) core.BrankRespon
 		app.CallbackUrl = req.CallbackUrl
 	}
 
-	if _, ok := validEnvironments[req.Environment]; ok {
-		app.Environment = req.Environment
+	if _, ok := validEnvironments[models.BrankEnv(req.Environment)]; ok {
+		app.Environment = models.BrankEnv(req.Environment)
 	}
 
 	if err := a.repo.Application.Update(app); err != nil {
