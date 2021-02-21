@@ -30,6 +30,7 @@ func (a *applicationLayer) CreateApp(req core.CreateAppRequest) core.BrankRespon
 		Logo:        req.Logo,
 		CallbackUrl: req.CallbackUrl,
 		ClientID:    req.ClientID,
+		Description: req.Description,
 		PublicKey:   utils.NewPublicKey(strings.ToLower(req.Name)),
 	}
 	if err := a.repo.Application.Create(&app); err != nil {
