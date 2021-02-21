@@ -55,6 +55,7 @@ type App struct {
 	PublicKey   string `json:"public_key"`
 	Name        string `json:"name"`
 	Logo        string `json:"logo"`
+	Description string `json:"description"`
 	CallbackUrl string `json:"callback_url"`
 	AccessToken string `json:"access_token"`
 	ClientID    int    `json:"client_id"`

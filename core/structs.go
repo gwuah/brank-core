@@ -24,8 +24,14 @@ type LoginClientRequest struct {
 type CreateAppRequest struct {
 	Name        string `json:"name"`
 	Logo        string `json:"logo"`
+	Description string `json:"description"`
 	CallbackUrl string `json:"callback_url"`
 	ClientID    int    `json:"client_id"`
+}
+
+type UpdateAppRequest struct {
+	ID int `json:"id"`
+	CreateAppRequest
 }
 
 type LinkAccountRequest struct {

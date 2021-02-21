@@ -51,6 +51,37 @@ func (a *applicationLayer) CreateApp(req core.CreateAppRequest) core.BrankRespon
 	}, nil)
 }
 
+func (a *applicationLayer) UpdateApp(req core.UpdateAppRequest) core.BrankResponse {
+	app, err := a.repo.Application.FindByID(req.ID)
+	if err != nil {
+		return utils.Error(err, nil, http.StatusNotFound)
+	}
+
+	if req.Name != "" {
+		app.Name = req.Name
+	}
+
+	if req.Description != "" {
+		app.Description = req.Description
+	}
+
+	if req.Logo != "" {
+		app.Logo = req.Logo
+	}
+
+	if req.CallbackUrl != "" {
+		app.CallbackUrl = req.CallbackUrl
+	}
+
+	if err := a.repo.Application.Update(app); err != nil {
+		return utils.Error(err, nil, http.StatusInternalServerError)
+	}
+
+	return utils.Success(&map[string]interface{}{
+		"app": app,
+	}, nil)
+}
+
 func (a *applicationLayer) GetByPublicKey(key string) core.BrankResponse {
 	app, err := a.repo.Application.FindByPublicKey(key)
 	if err != nil {

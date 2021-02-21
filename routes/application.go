@@ -36,6 +36,30 @@ func RegisterApplicationRoutes(e *gin.RouterGroup, s services.Services, a *auth.
 
 	})
 
+	e.PUT("", a.AuthorizeClientRequest(s.Config), func(c *gin.Context) {
+		var req core.UpdateAppRequest
+		if err := c.ShouldBindJSON(&req); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"message": "bad request",
+			})
+			return
+		}
+
+		req.ClientID = c.GetInt("client_id")
+
+		response := s.Application.UpdateApp(req)
+
+		if response.Error {
+			c.JSON(response.Code, gin.H{
+				"message": response.Meta.Message,
+			})
+			return
+		}
+
+		c.JSON(response.Code, response.Meta)
+
+	})
+
 	e.GET("/pk/:public_key", func(c *gin.Context) {
 		publicKey := c.Param("public_key")
 
