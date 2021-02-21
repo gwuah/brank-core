@@ -12,7 +12,7 @@ import (
 
 func RegisterApplicationRoutes(e *gin.RouterGroup, s services.Services, a *auth.Auth) {
 
-	e.POST("", func(c *gin.Context) {
+	e.POST("", a.AuthorizeClientRequest(s.Config), func(c *gin.Context) {
 		var req core.CreateAppRequest
 		if err := c.ShouldBindJSON(&req); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{
@@ -20,6 +20,8 @@ func RegisterApplicationRoutes(e *gin.RouterGroup, s services.Services, a *auth.
 			})
 			return
 		}
+
+		req.ClientID = c.GetInt("client_id")
 
 		response := s.Application.CreateApp(req)
 
