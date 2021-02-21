@@ -11,6 +11,7 @@ import (
 type Direction string
 type Status string
 type AppLinkState string
+type BrankEnv string
 
 var (
 	Debit   Direction = "debit"
@@ -20,6 +21,9 @@ var (
 
 	Claimed   AppLinkState = "claimed"
 	Unclaimed AppLinkState = "unclaimed"
+
+	Sandbox    BrankEnv = "sandbox"
+	Production BrankEnv = "production"
 )
 
 type LinkConfiguration struct {
@@ -52,13 +56,14 @@ type Account struct {
 
 type App struct {
 	Model
-	PublicKey   string `json:"public_key"`
-	Name        string `json:"name"`
-	Logo        string `json:"logo"`
-	Description string `json:"description"`
-	CallbackUrl string `json:"callback_url"`
-	AccessToken string `json:"access_token"`
-	ClientID    int    `json:"client_id"`
+	PublicKey   string   `json:"public_key"`
+	Name        string   `json:"name"`
+	Logo        string   `json:"logo"`
+	Description string   `json:"description"`
+	CallbackUrl string   `json:"callback_url"`
+	AccessToken string   `json:"access_token"`
+	ClientID    int      `json:"client_id"`
+	Environment BrankEnv `json:"environment"`
 }
 
 type FormConfig struct {

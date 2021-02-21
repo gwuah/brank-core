@@ -1,5 +1,7 @@
 package core
 
+import "brank/core/models"
+
 type FidelityTransactionsProcessorQeueJob struct {
 	LinkID int `json:"link_id"`
 }
@@ -30,7 +32,8 @@ type CreateAppRequest struct {
 }
 
 type UpdateAppRequest struct {
-	ID int `json:"id"`
+	ID          int             `json:"id"`
+	Environment models.BrankEnv `json:"environment"`
 	CreateAppRequest
 }
 

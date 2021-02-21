@@ -24,12 +24,21 @@ func newApplicationLayer(r repository.Repo, c *core.Config, a *auth.Auth) *appli
 	}
 }
 
+var (
+	validEnvironments = map[models.BrankEnv]struct{}{
+		models.Sandbox:    {},
+		models.Production: {},
+	}
+)
+
 func (a *applicationLayer) CreateApp(req core.CreateAppRequest) core.BrankResponse {
+
 	app := models.App{
 		Name:        strings.ToLower(req.Name),
 		Logo:        req.Logo,
 		CallbackUrl: req.CallbackUrl,
 		ClientID:    req.ClientID,
+		Environment: models.Sandbox,
 		Description: req.Description,
 		PublicKey:   utils.NewPublicKey(strings.ToLower(req.Name)),
 	}
@@ -72,6 +81,10 @@ func (a *applicationLayer) UpdateApp(req core.UpdateAppRequest) core.BrankRespon
 
 	if req.CallbackUrl != "" {
 		app.CallbackUrl = req.CallbackUrl
+	}
+
+	if _, ok := validEnvironments[req.Environment]; ok {
+		app.Environment = req.Environment
 	}
 
 	if err := a.repo.Application.Update(app); err != nil {
