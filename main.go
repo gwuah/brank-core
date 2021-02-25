@@ -37,6 +37,7 @@ func main() {
 		&models.Link{},
 		&models.App{},
 		&models.Customer{},
+		&models.AppLink{},
 	)
 	if err != nil {
 		log.Fatal("failed to run migrations. err", err)
