@@ -73,6 +73,7 @@ type FormConfig struct {
 	Required    bool   `json:"required"`
 	Placeholder string `json:"placeholder,omitempty"`
 	Value       string `json:"value,omitempty"`
+	RequestKey  string `json:"request_key,omitempty"`
 }
 
 type Bank struct {
