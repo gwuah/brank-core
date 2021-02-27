@@ -64,6 +64,7 @@ func SeedBanks(db *gorm.DB) error {
 				Type:        "text",
 				Required:    true,
 				Placeholder: "0205428811",
+				RequestKey:  "username",
 			},
 			{
 				ID:          2,
@@ -71,6 +72,7 @@ func SeedBanks(db *gorm.DB) error {
 				Type:        "text",
 				Required:    true,
 				Placeholder: "******",
+				RequestKey:  "password",
 			},
 			{
 				ID:       3,
@@ -86,6 +88,7 @@ func SeedBanks(db *gorm.DB) error {
 				Type:        "text",
 				Required:    true,
 				Placeholder: "****",
+				RequestKey:  "otp",
 			},
 			{
 				ID:       2,
