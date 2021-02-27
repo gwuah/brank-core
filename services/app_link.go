@@ -152,7 +152,7 @@ func (l *appLinkLayer) VerifyOTP(req core.VerifyOTPRequest) core.BrankResponse {
 		return utils.Error(err, nil, http.StatusInternalServerError)
 	}
 
-	link, err := l.repo.Link.FindById(appLink.ID)
+	link, err := l.repo.Link.FindById(appLink.LinkID)
 	if err != nil {
 		return utils.Error(err, nil, http.StatusInternalServerError)
 	}
@@ -187,7 +187,7 @@ func (l *appLinkLayer) VerifyOTP(req core.VerifyOTPRequest) core.BrankResponse {
 				return utils.Error(err, nil, http.StatusInternalServerError)
 			}
 
-			if err := l.q.QueueJob(worker.FidelityJob, worker.CreateFidelityJob(link.ID)); err != nil {
+			if err := l.q.QueueJob(worker.FidelityJob, worker.CreateFidelityJob(appLink.ID)); err != nil {
 				return utils.Error(err, nil, http.StatusInternalServerError)
 			}
 

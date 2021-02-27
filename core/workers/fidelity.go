@@ -172,7 +172,7 @@ func (f *Fidelity) Worker() que.WorkFunc {
 			return fmt.Errorf("fidelity_worker: failed to update link. err:%v", err)
 		}
 
-		if err := f.q.QueueJob(FidelityTransactionsProcessingJob, CreateFidelityTransactionsJob(link.ID)); err != nil {
+		if err := f.q.QueueJob(FidelityTransactionsProcessingJob, CreateFidelityTransactionsJob(appLink.ID)); err != nil {
 			return fmt.Errorf("fidelity_worker: failed to queue processing job. err:%v", err)
 		}
 

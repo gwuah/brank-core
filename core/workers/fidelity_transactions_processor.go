@@ -89,7 +89,7 @@ func (ft *FidelityTransactions) Worker() que.WorkFunc {
 					Date:        dateTime,
 					Description: strings.Join(transaction.Description[:], ","),
 					Direction:   direction,
-					AccountID:   8, // TODO: change this to tree.AccountID
+					AccountID:   11, // TODO: change this to tree.AccountID
 					Amount:      int64(amount),
 					Status:      models.Success,
 				})
