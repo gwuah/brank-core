@@ -76,7 +76,7 @@ func load() {
 	}
 	err := godotenv.Load()
 	if err != nil {
-		log.Printf("error loading env file")
+		log.Println("error loading env file", err)
 	}
 }
 

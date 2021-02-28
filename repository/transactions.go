@@ -30,9 +30,22 @@ func (t *transactionLayer) FindById(id int) (*models.Transaction, error) {
 
 func (t *transactionLayer) Find(p Pagination, query string, params ...interface{}) (*BulkLoad, error) {
 	var transactions []models.Transaction
+	var total int64
+
 	if err := t.db.Where(query).Limit(p.Limit).Offset(p.Offset).Order("id DESC").Find(&transactions).Error; err != nil {
 		return nil, err
 	}
 
-	return nil, nil
+	if err := t.db.Model(transactions).Where(query).Count(&total).Error; err != nil {
+		return nil, err
+	}
+
+	return &BulkLoad{
+		Records: transactions,
+		Pagination: Pagination{
+			Offset: p.Offset,
+			Limit:  p.Limit,
+			Total:  total,
+		},
+	}, nil
 }

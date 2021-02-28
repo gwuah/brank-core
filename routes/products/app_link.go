@@ -20,7 +20,7 @@ func RegisterAppLinkRoutes(e *gin.RouterGroup, s services.Services, a *auth.Auth
 		}
 
 		_, err := a.ParseAppToken(s.Config, core.AuthParams{
-			AccessToken: req.AccessToken,
+			AppLinkToken: req.AccessToken,
 		})
 
 		if err != nil {

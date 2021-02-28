@@ -54,9 +54,7 @@ func (t *transactionsLayer) GetTransactions(req GetTransactionsParams) core.Bran
 
 	return utils.Success(&map[string]interface{}{
 		"transactions": res.Records,
-		"pagination": repository.Pagination{
-			Total: res.Pagination.Total,
-		},
+		"pagination":   res.Pagination,
 	}, nil)
 
 }
