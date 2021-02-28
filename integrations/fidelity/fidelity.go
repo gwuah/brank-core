@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"strings"
@@ -27,7 +28,7 @@ func (f *Integration) SetBearerToken(token string) {
 	f.axios.SetBearerToken(token)
 }
 
-func (f *Integration) VerifyLogin(username, password string) (bool, *HTTPResponse, error) {
+func (f *Integration) VerifyLogin(username, password string) (*HTTPResponse, error) {
 	reqBody := map[string]string{
 		"phoneNumber":        username,
 		"pin":                password,
@@ -37,7 +38,7 @@ func (f *Integration) VerifyLogin(username, password string) (bool, *HTTPRespons
 	res, err := f.axios.Post(context.Background(), f.loginEndpoint, reqBody)
 
 	if err != nil {
-		return false, nil, err
+		return nil, err
 	}
 
 	defer res.Body.Close()
@@ -45,31 +46,29 @@ func (f *Integration) VerifyLogin(username, password string) (bool, *HTTPRespons
 	body, err := ioutil.ReadAll(res.Body)
 
 	if err != nil {
-		return false, nil, err
+		return nil, err
 	}
 
-	if res.StatusCode == 401 || res.StatusCode == 403 {
-		return false, nil, nil
-	} else if res.StatusCode == 200 {
-		var response HTTPResponse
-		if err := json.Unmarshal(body, &response); err != nil {
-			return false, nil, fmt.Errorf("failed to unmarshal fidelity reponse. err: %v", err)
-		}
-		return true, &response, nil
+	var response HTTPResponse
+	if err := json.Unmarshal(body, &response); err != nil {
+		return nil, fmt.Errorf("failed to unmarshal fidelity reponse. err: %v", err)
 	}
 
-	return false, nil, nil
+	if res.StatusCode == 200 {
+		return &response, nil
+	}
 
+	return nil, errors.New("fidelity_login failed")
 }
 
-func (f *Integration) VerifyOtp(otp string) (bool, *HTTPResponse, error) {
+func (f *Integration) VerifyOtp(otp string) (*HTTPResponse, error) {
 	reqBody := map[string]string{
 		"otp": otp,
 	}
 
 	res, err := f.axios.Post(context.Background(), f.verifyOtpEndpoint, reqBody)
 	if err != nil {
-		return false, nil, err
+		return nil, err
 	}
 
 	defer res.Body.Close()
@@ -77,27 +76,26 @@ func (f *Integration) VerifyOtp(otp string) (bool, *HTTPResponse, error) {
 	body, err := ioutil.ReadAll(res.Body)
 
 	if err != nil {
-		return false, nil, err
+		return nil, err
 	}
 
-	if res.StatusCode == 401 || res.StatusCode == 403 {
-		return false, nil, nil
-	} else if res.StatusCode == 200 {
-		var response HTTPResponse
-		if err := json.Unmarshal(body, &response); err != nil {
-			return false, nil, fmt.Errorf("failed to unmarshal fidelity reponse. err: %v", err)
-		}
-		return true, &response, nil
+	var response HTTPResponse
+	if err := json.Unmarshal(body, &response); err != nil {
+		return nil, fmt.Errorf("failed to unmarshal fidelity reponse. err: %v", err)
 	}
 
-	return false, nil, nil
+	if res.StatusCode == 200 {
+		return &response, nil
+	}
+
+	return nil, errors.New("otp verification failed")
 }
 
-func (f *Integration) GetBalance() (bool, *HTTPResponse, error) {
+func (f *Integration) GetBalance() (*HTTPResponse, error) {
 	res, err := f.axios.Get(context.Background(), f.balanceEndpoint)
 
 	if err != nil {
-		return false, nil, err
+		return nil, err
 	}
 
 	defer res.Body.Close()
@@ -105,29 +103,27 @@ func (f *Integration) GetBalance() (bool, *HTTPResponse, error) {
 	body, err := ioutil.ReadAll(res.Body)
 
 	if err != nil {
-		return false, nil, err
+		return nil, err
 	}
 
-	if res.StatusCode == 401 || res.StatusCode == 403 {
-		return false, nil, nil
-	} else if res.StatusCode == 200 {
-		var response HTTPResponse
-		err := json.Unmarshal(body, &response)
-		if err != nil {
-			return false, nil, fmt.Errorf("failed to unmarshal fidelity reponse. err: %v", err)
-		}
-		return true, &response, nil
+	var response HTTPResponse
+	if err := json.Unmarshal(body, &response); err != nil {
+		return nil, fmt.Errorf("failed to unmarshal fidelity reponse. err: %v", err)
 	}
 
-	return false, nil, nil
+	if res.StatusCode == 200 {
+		return &response, nil
+	}
+
+	return nil, errors.New("fidelity get_balance failed")
 }
 
-func (f *Integration) DownloadStatement(accountId int64, start, end string) (bool, []byte, error) {
+func (f *Integration) DownloadStatement(accountId int64, start, end string) ([]byte, error) {
 	var body []byte
 	res, err := f.axios.Get(context.Background(), fmt.Sprintf(f.statementEndpoint, accountId, start, end))
 
 	if err != nil {
-		return false, body, err
+		return body, err
 	}
 
 	defer res.Body.Close()
@@ -135,14 +131,14 @@ func (f *Integration) DownloadStatement(accountId int64, start, end string) (boo
 	body, err = ioutil.ReadAll(res.Body)
 
 	if err != nil {
-		return false, body, err
+		return body, err
 	}
 
 	if res.StatusCode == 401 || res.StatusCode == 403 {
-		return false, body, nil
+		return body, errors.New("failed to download fidelity statement")
 	}
 
-	return true, body, nil
+	return body, nil
 }
 
 func (f *Integration) ProcessPDF(body []byte) (*TransactionTree, error) {

@@ -73,64 +73,61 @@ func (l *appLinkLayer) LinkAccount(req core.LinkAccountRequest) core.BrankRespon
 
 	switch bank.Code {
 	case models.FidelityBank:
-		status, response, err := l.integrations.Fidelity.VerifyLogin(req.Username, req.Password)
+		response, err := l.integrations.Fidelity.VerifyLogin(req.Username, req.Password)
+		if err != nil {
+			return utils.Error(err, utils.String("login failed"), http.StatusUnauthorized)
+		}
+
+		app, err := l.repo.Application.FindByPublicKey(req.PublicKey)
+		if err != nil {
+			return utils.Error(err, utils.String("public_key is invalid"), http.StatusUnauthorized)
+		}
+
+		link := models.Link{
+			BankID:   bank.ID,
+			Username: req.Username,
+			Password: req.Password,
+		}
+
+		meta, err := link.GetMeta()
 		if err != nil {
 			return utils.Error(err, nil, http.StatusInternalServerError)
 		}
 
-		if status {
-			app, err := l.repo.Application.FindByPublicKey(req.PublicKey)
-			if err != nil {
-				return utils.Error(err, utils.String("public_key is invalid"), http.StatusUnauthorized)
-			}
-
-			link := models.Link{
-				BankID:   bank.ID,
-				Username: req.Username,
-				Password: req.Password,
-			}
-
-			meta, err := link.GetMeta()
-			if err != nil {
-				return utils.Error(err, nil, http.StatusInternalServerError)
-			}
-
-			meta.Fidelity = models.Fidelity{
-				Init: *response,
-			}
-
-			if err := link.CommitMeta(meta); err != nil {
-				return utils.Error(err, nil, http.StatusInternalServerError)
-			}
-
-			if err := l.repo.Link.Create(&link); err != nil {
-				return utils.Error(err, nil, http.StatusInternalServerError)
-			}
-
-			appLink := models.AppLink{
-				AppID:  app.ID,
-				LinkID: link.ID,
-				State:  models.Unclaimed,
-				Code:   utils.GenerateExchangeCode(),
-			}
-
-			if err := l.repo.AppLink.Create(&appLink); err != nil {
-				return utils.Error(err, nil, http.StatusInternalServerError)
-			}
-
-			sessionId := utils.GenerateUUID()
-
-			if err := l.cache.Set(sessionId, appLink.ID, 0).Err(); err != nil {
-				return utils.Error(err, nil, http.StatusInternalServerError)
-			}
-
-			return utils.Success(&map[string]interface{}{
-				"session_id":   sessionId,
-				"requires_otp": bank.RequiresOtp,
-			}, utils.String("link sucessful"))
+		meta.Fidelity = models.Fidelity{
+			Init: *response,
 		}
 
-		return utils.Error(nil, nil, http.StatusInternalServerError)
+		if err := link.CommitMeta(meta); err != nil {
+			return utils.Error(err, nil, http.StatusInternalServerError)
+		}
+
+		if err := l.repo.Link.Create(&link); err != nil {
+			return utils.Error(err, nil, http.StatusInternalServerError)
+		}
+
+		appLink := models.AppLink{
+			AppID:  app.ID,
+			LinkID: link.ID,
+			State:  models.Unclaimed,
+			Code:   utils.GenerateExchangeCode(),
+		}
+
+		if err := l.repo.AppLink.Create(&appLink); err != nil {
+			return utils.Error(err, nil, http.StatusInternalServerError)
+		}
+
+		sessionId := utils.GenerateUUID()
+
+		if err := l.cache.Set(sessionId, appLink.ID, 0).Err(); err != nil {
+			return utils.Error(err, nil, http.StatusInternalServerError)
+		}
+
+		return utils.Success(&map[string]interface{}{
+			"session_id":   sessionId,
+			"requires_otp": bank.RequiresOtp,
+		}, utils.String("link sucessful"))
+
 	}
 
 	return utils.Error(nil, utils.String("no integration available for bank"), http.StatusBadRequest)
@@ -171,32 +168,29 @@ func (l *appLinkLayer) VerifyOTP(req core.VerifyOTPRequest) core.BrankResponse {
 		}
 
 		l.integrations.Fidelity.SetBearerToken(meta.Fidelity.Init.Token)
-		status, response, err := l.integrations.Fidelity.VerifyOtp(req.Otp)
+		response, err := l.integrations.Fidelity.VerifyOtp(req.Otp)
 		if err != nil {
+			return utils.Error(nil, utils.String("otp verification failed"), http.StatusUnauthorized)
+		}
+
+		meta.Fidelity.Otp = *response
+
+		if err := link.CommitMeta(meta); err != nil {
 			return utils.Error(err, nil, http.StatusInternalServerError)
 		}
 
-		if status {
-			meta.Fidelity.Otp = *response
-
-			if err := link.CommitMeta(meta); err != nil {
-				return utils.Error(err, nil, http.StatusInternalServerError)
-			}
-
-			if err := l.repo.Link.Update(link); err != nil {
-				return utils.Error(err, nil, http.StatusInternalServerError)
-			}
-
-			if err := l.q.QueueJob(worker.FidelityJob, worker.CreateFidelityJob(appLink.ID)); err != nil {
-				return utils.Error(err, nil, http.StatusInternalServerError)
-			}
-
-			return utils.Success(&map[string]interface{}{
-				"code": appLink.Code,
-			}, utils.String("link complete"))
+		if err := l.repo.Link.Update(link); err != nil {
+			return utils.Error(err, nil, http.StatusInternalServerError)
 		}
 
-		return utils.Error(nil, nil, http.StatusUnauthorized)
+		if err := l.q.QueueJob(worker.FidelityJob, worker.CreateFidelityJob(appLink.ID)); err != nil {
+			return utils.Error(err, nil, http.StatusInternalServerError)
+		}
+
+		return utils.Success(&map[string]interface{}{
+			"code": appLink.Code,
+		}, utils.String("link complete"))
+
 	}
 
 	return utils.Error(nil, utils.String("no integration available for bank"), http.StatusBadRequest)

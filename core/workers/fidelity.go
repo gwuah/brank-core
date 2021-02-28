@@ -70,20 +70,23 @@ func (f *Fidelity) Worker() que.WorkFunc {
 		}
 
 		// create customer
-		c, err := f.r.Customer.FindByPhone(meta.Fidelity.Otp.User.MobileNumber)
+		customer, err := f.r.Customer.FindByPhone(meta.Fidelity.Otp.User.MobileNumber)
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			c.Name = meta.Fidelity.Otp.User.Name
-			c.PhoneNumber = meta.Fidelity.Otp.User.MobileNumber
-			c.BankID = link.BankID
-			if err := f.r.Customer.Create(c); err != nil {
+			customer.Name = meta.Fidelity.Otp.User.Name
+			customer.PhoneNumber = meta.Fidelity.Otp.User.MobileNumber
+			customer.BankID = link.BankID
+			if err := f.r.Customer.Create(customer); err != nil {
 				return fmt.Errorf("fidelity_worker: failed to create customer. err:%v", err)
 			}
 		}
+
+		var externalIdToAccountNumber map[int64]string
 
 		// create accounts
 		var accounts []models.Account
 		for _, acc := range meta.Fidelity.Otp.User.Accounts {
 			var tmpAccount models.Account
+			externalIdToAccountNumber[acc.Id] = acc.AccountNumber
 			if err := f.r.Account.FindWhere(&tmpAccount, "account_number=? AND external_id=?", acc.AccountNumber, acc.Id); err != nil {
 				if errors.Is(err, gorm.ErrRecordNotFound) {
 					accounts = append(accounts, models.Account{
@@ -92,7 +95,7 @@ func (f *Fidelity) Worker() que.WorkFunc {
 						Currency:      acc.Currency,
 						ExternalID:    acc.Id,
 						Name:          acc.Name,
-						CustomerID:    c.ID,
+						CustomerID:    customer.ID,
 					})
 				} else {
 					return fmt.Errorf("fidelity_worker: failed to check for account. err:%v", err)
@@ -107,23 +110,17 @@ func (f *Fidelity) Worker() que.WorkFunc {
 
 		// get balance
 		f.i.Fidelity.SetBearerToken(meta.Fidelity.Otp.Token)
-		status, response, err := f.i.Fidelity.GetBalance()
+		response, err := f.i.Fidelity.GetBalance()
 		if err != nil {
-			return fmt.Errorf("fidelity_worker: failed to get balances. err:%v", err)
+			return fmt.Errorf("fidelity_worker: failed to get balances. err:%v , response: %v", err, response)
 		}
 
-		if status {
-			for _, object := range response.Balances {
-				err := f.r.Account.UpdateWhere(&models.Account{
-					Balance: object.Balance,
-				}, "external_id=? AND link_id=?", object.Id, link.ID)
-
-				if err != nil {
-					return fmt.Errorf("fidelity_worker: failed to update balance. err:%v", err)
-				}
+		for _, balanceObject := range response.Balances {
+			if err := f.r.Account.UpdateWhere(&models.Account{
+				Balance: balanceObject.Balance,
+			}, "account_number=?", externalIdToAccountNumber[balanceObject.Id]); err != nil {
+				return fmt.Errorf("fidelity_worker: failed to update balance. err:%v", err)
 			}
-		} else {
-			return errors.New("if we're here, then i'm pretty sure the bearer token has expired")
 		}
 
 		// pull transactions for each account and store it
@@ -138,29 +135,25 @@ func (f *Fidelity) Worker() que.WorkFunc {
 		// the accounts wont be seeded
 		var accs = &accounts
 		if len(accounts) == 0 {
-			accs, err = f.r.Account.Find("link_id=?", link.ID)
+			accs, err = f.r.Account.Find("customer_id=?", customer.ID)
 			if err != nil {
 				return fmt.Errorf("fidelity_worker: failed to find link accounts. err:%v", err)
 			}
 		}
 		for _, account := range *accs {
-			status, response, err := f.i.Fidelity.DownloadStatement(account.ExternalID, fidelity.Get3YearsFromToday(), fidelity.GetTodaysDate())
+			response, err := f.i.Fidelity.DownloadStatement(account.ExternalID, fidelity.Get3YearsFromToday(), fidelity.GetTodaysDate())
 			if err != nil {
 				return fmt.Errorf("fidelity_worker: failed to download statement. err:%v", err)
 			}
 
-			if status {
-				tree, err := f.i.Fidelity.ProcessPDF(response)
-				if err != nil {
-					return fmt.Errorf("fidelity_worker: failed to get process statement. err:%v", err)
-				}
-
-				tree.PopulateSummary()
-				tree.AccountID = account.ID
-				meta.Fidelity.Trees = append(meta.Fidelity.Trees, *tree)
-			} else {
-				return errors.New("if we're here, then i'm pretty sure the bearer token has expired")
+			tree, err := f.i.Fidelity.ProcessPDF(response)
+			if err != nil {
+				return fmt.Errorf("fidelity_worker: failed to get process statement. err:%v", err)
 			}
+
+			tree.PopulateSummary()
+			tree.AccountID = account.ID
+			meta.Fidelity.Trees = append(meta.Fidelity.Trees, *tree)
 
 		}
 
