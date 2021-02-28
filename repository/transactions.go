@@ -29,6 +29,7 @@ func (t *transactionLayer) FindById(id int) (*models.Transaction, error) {
 }
 
 func (t *transactionLayer) Find(p Pagination, query string, params ...interface{}) (*BulkLoad, error) {
+
 	var transactions []models.Transaction
 	var total int64
 

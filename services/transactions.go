@@ -43,10 +43,11 @@ func (t *transactionsLayer) GetTransactions(req GetTransactionsParams) core.Bran
 		queryArray = append(queryArray, fmt.Sprintf("account_id=%d", account.ID))
 	}
 
-	res, err := t.repo.Transactions.Find(repository.Pagination{
+	paginationConfig := repository.ValidatePaginationConfig(repository.Pagination{
 		Offset: req.Offset,
 		Limit:  req.Limit,
-	}, strings.Join(queryArray, " OR "))
+	})
+	res, err := t.repo.Transactions.Find(paginationConfig, strings.Join(queryArray, " OR "))
 
 	if err != nil {
 		return utils.Error(err, nil, http.StatusInternalServerError)

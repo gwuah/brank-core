@@ -6,6 +6,11 @@ import (
 	"gorm.io/gorm"
 )
 
+const (
+	DefaultLimit  = 50
+	DefaultOffset = 0
+)
+
 type Pagination struct {
 	Offset int   `json:"offset"`
 	Limit  int   `json:"limit"`
@@ -15,6 +20,21 @@ type Pagination struct {
 type BulkLoad struct {
 	Pagination
 	Records []models.Transaction `json:"records"`
+}
+
+func ValidatePaginationConfig(p Pagination) Pagination {
+	if p.Limit <= 0 {
+		p.Limit = DefaultLimit
+	}
+
+	if p.Offset <= DefaultOffset {
+		p.Offset = DefaultOffset
+	}
+
+	return Pagination{
+		Limit:  p.Limit,
+		Offset: p.Offset,
+	}
 }
 
 type Repo struct {
