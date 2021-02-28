@@ -80,7 +80,7 @@ func (f *Fidelity) Worker() que.WorkFunc {
 			}
 		}
 
-		var externalIdToAccountNumber map[int64]string
+		externalIdToAccountNumber := map[int64]string{}
 
 		// create accounts
 		var accounts []models.Account
